@@ -10,3 +10,7 @@ design
 mobile/build/
 mobile/.gradle/
 mobile/local.properties
+
+node_modules/
+.vite/
+dist/
