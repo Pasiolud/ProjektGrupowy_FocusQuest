@@ -3,7 +3,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,0&display=swap');
 
 :root {
-  /* Tonal Architecture: The Botanical Minimalist */
   --primary: #006e1c;
   --primary-container: #4caf50;
   --on-primary: #ffffff;
@@ -18,11 +17,10 @@
   
   --on-surface: #1a1c1c;
   --on-surface-variant: #3f4a3c;
-  --outline-variant: rgba(189, 202, 190, 0.15); /* 15% opacity fallback */
+  --outline-variant: rgba(189, 202, 190, 0.15);
   
   --error: #ba1a1a;
   
-  /* Gradient Spec */
   --primary-gradient: linear-gradient(135deg, #006e1c 0%, #4caf50 100%);
 }
 
@@ -41,7 +39,6 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* Typography Spec */
 h1, h2, h3, .display {
   letter-spacing: -0.02em;
   color: var(--on-surface);
@@ -59,13 +56,10 @@ h1, h2, h3, .display {
   color: var(--on-surface-variant);
 }
 
-/* 1. OVERVIEW: NO-LINE RULE */
-/* Boundaries defined exclusively through background shifts. */
 .section-boundary {
   border: none !important;
 }
 
-/* Components */
 .glass-nav {
   background-color: rgba(249, 249, 249, 0.85);
   backdrop-filter: blur(20px);
@@ -75,18 +69,16 @@ h1, h2, h3, .display {
 
 .card {
   background-color: var(--surface-container-lowest);
-  border-radius: 1rem; /* lg roundedness */
+  border-radius: 1rem;
   padding: 2rem;
-  /* Card on Surface-Container: No shadow default */
 }
 
 .card-elevated {
   background-color: var(--surface-container-lowest);
   border-radius: 1rem;
-  box-shadow: 0 4px 32px rgba(26, 28, 28, 0.1); /* Ambient Shadow spec */
+  box-shadow: 0 4px 32px rgba(26, 28, 28, 0.1);
 }
 
-/* Sidebar: The Organic Sanctuary */
 .sidebar {
   width: 256px;
   background-color: var(--surface-container-low);
@@ -96,7 +88,7 @@ h1, h2, h3, .display {
   position: sticky;
   top: 0;
   padding: 2rem 0;
-  padding-left: 24px; /* Asymmetry Rule */
+  padding-left: 24px;
   padding-right: 16px; 
 }
 
@@ -124,12 +116,11 @@ h1, h2, h3, .display {
   font-weight: 700;
 }
 
-/* Buttons: Refined Primitives */
 .btn-primary {
   background: var(--primary-gradient);
   color: var(--on-primary);
   border: none;
-  border-radius: 1.5rem; /* xl roundedness */
+  border-radius: 1.5rem;
   padding: 1rem 2rem;
   font-weight: 700;
   cursor: pointer;
@@ -150,7 +141,6 @@ h1, h2, h3, .display {
   cursor: pointer;
 }
 
-/* Input: Understated Elegance */
 .input-field {
   background-color: var(--surface-container-highest);
   border: none;
@@ -169,11 +159,10 @@ h1, h2, h3, .display {
   border-bottom-color: var(--primary);
 }
 
-/* Layout Spacing */
 .page-container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 32px; /* Editorial breathing room */
+  padding: 32px;
 }
 
 .bento-grid {

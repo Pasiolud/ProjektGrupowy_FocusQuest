@@ -27,7 +27,6 @@ export default function DashboardView({ session }) {
 
   return (
     <div style={{ display: 'flex', width: '100%', minHeight: '100vh' }}>
-      {/* Sidebar - The Organic Sanctuary */}
       <aside className="sidebar">
         <div style={{ marginBottom: '40px' }}>
           <h1 className="logo-font" style={{ fontSize: '1.25rem', color: 'var(--on-surface)' }}>FocusQuest</h1>
@@ -63,7 +62,6 @@ export default function DashboardView({ session }) {
         </div>
       </aside>
 
-      {/* Main Content Area */}
       <main style={{ flex: 1, backgroundColor: 'var(--surface)' }}>
         <header className="glass-nav" style={{ position: 'sticky', top: 0, padding: '16px 48px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <h2 style={{ fontSize: '1.25rem', fontWeight: 800 }}>Dashboard</h2>
@@ -85,7 +83,6 @@ export default function DashboardView({ session }) {
             </p>
           </section>
 
-          {/* Stats Bento Grid */}
           <div className="bento-grid">
             <div className="card" style={{ gridColumn: 'span 8', backgroundColor: 'var(--surface-container-low)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '16px' }}>
@@ -123,7 +120,6 @@ export default function DashboardView({ session }) {
           </div>
         </div>
 
-        {/* Forest Background Blur Fallback */}
         <div style={{ position: 'fixed', bottom: 0, left: 0, width: '100%', height: '20vh', background: 'linear-gradient(to top, var(--surface-container-low), transparent)', pointerEvents: 'none', zIndex: -1 }}></div>
       </main>
 
