@@ -1,0 +1,197 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,0&display=swap');
+
+:root {
+  /* Tonal Architecture: The Botanical Minimalist */
+  --primary: #006e1c;
+  --primary-container: #4caf50;
+  --on-primary: #ffffff;
+  --on-primary-container: #003c0b;
+  
+  --surface: #f9f9f9;
+  --surface-container-low: #f3f3f3;
+  --surface-container: #eeeeee;
+  --surface-container-high: #e8e8e8;
+  --surface-container-highest: #e2e2e2;
+  --surface-container-lowest: #ffffff;
+  
+  --on-surface: #1a1c1c;
+  --on-surface-variant: #3f4a3c;
+  --outline-variant: rgba(189, 202, 190, 0.15); /* 15% opacity fallback */
+  
+  --error: #ba1a1a;
+  
+  /* Gradient Spec */
+  --primary-gradient: linear-gradient(135deg, #006e1c 0%, #4caf50 100%);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: var(--surface);
+  color: var(--on-surface);
+  min-height: 100vh;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Typography Spec */
+h1, h2, h3, .display {
+  letter-spacing: -0.02em;
+  color: var(--on-surface);
+}
+
+.label-text {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 700;
+  color: var(--on-surface-variant);
+}
+
+.body-secondary {
+  color: var(--on-surface-variant);
+}
+
+/* 1. OVERVIEW: NO-LINE RULE */
+/* Boundaries defined exclusively through background shifts. */
+.section-boundary {
+  border: none !important;
+}
+
+/* Components */
+.glass-nav {
+  background-color: rgba(249, 249, 249, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  z-index: 100;
+}
+
+.card {
+  background-color: var(--surface-container-lowest);
+  border-radius: 1rem; /* lg roundedness */
+  padding: 2rem;
+  /* Card on Surface-Container: No shadow default */
+}
+
+.card-elevated {
+  background-color: var(--surface-container-lowest);
+  border-radius: 1rem;
+  box-shadow: 0 4px 32px rgba(26, 28, 28, 0.1); /* Ambient Shadow spec */
+}
+
+/* Sidebar: The Organic Sanctuary */
+.sidebar {
+  width: 256px;
+  background-color: var(--surface-container-low);
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  position: sticky;
+  top: 0;
+  padding: 2rem 0;
+  padding-left: 24px; /* Asymmetry Rule */
+  padding-right: 16px; 
+}
+
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--on-surface-variant);
+  border-radius: 0.75rem 0 0 0.75rem;
+  transition: all 0.2s ease;
+}
+
+.sidebar-item:hover {
+  background-color: var(--surface-container);
+  color: var(--primary);
+}
+
+.sidebar-item.active {
+  background-color: var(--surface-container);
+  color: var(--primary);
+  font-weight: 700;
+}
+
+/* Buttons: Refined Primitives */
+.btn-primary {
+  background: var(--primary-gradient);
+  color: var(--on-primary);
+  border: none;
+  border-radius: 1.5rem; /* xl roundedness */
+  padding: 1rem 2rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.2s ease, filter 0.2s ease;
+}
+
+.btn-primary:active {
+  transform: scale(0.98);
+}
+
+.btn-secondary {
+  background-color: var(--surface-container-high);
+  color: var(--primary);
+  border: none;
+  border-radius: 1rem;
+  padding: 0.5rem 1.5rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* Input: Understated Elegance */
+.input-field {
+  background-color: var(--surface-container-highest);
+  border: none;
+  border-bottom: 2px solid transparent;
+  border-radius: 0.5rem 0.5rem 0 0;
+  padding: 1rem;
+  width: 100%;
+  color: var(--on-surface);
+  font-family: inherit;
+  transition: background-color 0.2s, border-bottom-color 0.2s;
+}
+
+.input-field:focus {
+  outline: none;
+  background-color: var(--surface-container-highest);
+  border-bottom-color: var(--primary);
+}
+
+/* Layout Spacing */
+.page-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 32px; /* Editorial breathing room */
+}
+
+.bento-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 1.5rem;
+}
+
+@media (max-width: 768px) {
+  .sidebar { display: none; }
+  .mobile-nav { 
+    display: flex; 
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    background-color: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(20px);
+    padding: 12px 24px;
+    justify-content: space-around;
+  }
+}
