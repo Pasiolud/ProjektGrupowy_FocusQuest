@@ -1,29 +1,35 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../supabase';
+import ProfileTab from '../components/ProfileTab';
+import TimerTab from '../components/TimerTab';
+import ShopTab from '../components/ShopTab';
+import LeaderboardTab from '../components/LeaderboardTab';
 
 export default function DashboardView({ session }) {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('timer'); // 'timer', 'profile', 'shop', 'leaderboard'
+
+  const fetchProfileFromPython = useCallback(async () => {
+    const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
+    try {
+      const response = await fetch(`${backendUrl}/api/me`, {
+        headers: { 'Authorization': `Bearer ${session.access_token}` }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setProfile(data.profile);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  }, [session.access_token]);
 
   useEffect(() => {
-    const fetchProfileFromPython = async () => {
-      const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
-      try {
-        const response = await fetch(`${backendUrl}/api/me`, {
-          headers: { 'Authorization': `Bearer ${session.access_token}` }
-        });
-        if (response.ok) {
-          const data = await response.json();
-          setProfile(data.profile);
-        }
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchProfileFromPython();
-  }, [session]);
+  }, [fetchProfileFromPython]);
 
   return (
     <div style={{ display: 'flex', width: '100%', minHeight: '100vh' }}>
@@ -43,28 +49,53 @@ export default function DashboardView({ session }) {
         </div>
 
         <nav style={{ flex: 1 }}>
-          <a href="#" className="sidebar-item active">
+          <button 
+            className={`sidebar-item ${activeTab === 'timer' ? 'active' : ''}`} 
+            style={{ width: '100%', border: 'none', background: activeTab === 'timer' ? 'var(--surface-container)' : 'transparent', textAlign: 'left', cursor: 'pointer' }}
+            onClick={() => setActiveTab('timer')}
+          >
             <span className="material-symbols-outlined">timer</span>
             <span>Timer</span>
-          </a>
-          <a href="#" className="sidebar-item">
+          </button>
+          <button 
+            className={`sidebar-item ${activeTab === 'profile' ? 'active' : ''}`} 
+            style={{ width: '100%', border: 'none', background: activeTab === 'profile' ? 'var(--surface-container)' : 'transparent', textAlign: 'left', cursor: 'pointer' }}
+            onClick={() => setActiveTab('profile')}
+          >
             <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 0" }}>person</span>
             <span>Profil</span>
-          </a>
-          <a href="#" className="sidebar-item">
+          </button>
+          <button 
+            className={`sidebar-item ${activeTab === 'shop' ? 'active' : ''}`} 
+            style={{ width: '100%', border: 'none', background: activeTab === 'shop' ? 'var(--surface-container)' : 'transparent', textAlign: 'left', cursor: 'pointer' }}
+            onClick={() => setActiveTab('shop')}
+          >
             <span className="material-symbols-outlined">shopping_bag</span>
             <span>Sklep</span>
-          </a>
+          </button>
+          <button 
+            className={`sidebar-item ${activeTab === 'leaderboard' ? 'active' : ''}`} 
+            style={{ width: '100%', border: 'none', background: activeTab === 'leaderboard' ? 'var(--surface-container)' : 'transparent', textAlign: 'left', cursor: 'pointer' }}
+            onClick={() => setActiveTab('leaderboard')}
+          >
+            <span className="material-symbols-outlined">emoji_events</span>
+            <span>Ranking</span>
+          </button>
         </nav>
 
         <div style={{ marginTop: 'auto' }}>
-          <button className="btn-primary" style={{ width: '100%' }}>Start Focus</button>
+          <button className="btn-primary" style={{ width: '100%' }} onClick={() => setActiveTab('timer')}>Start Focus</button>
         </div>
       </aside>
 
       <main style={{ flex: 1, backgroundColor: 'var(--surface)' }}>
         <header className="glass-nav" style={{ position: 'sticky', top: 0, padding: '16px 48px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h2 style={{ fontSize: '1.25rem', fontWeight: 800 }}>Dashboard</h2>
+          <h2 style={{ fontSize: '1.25rem', fontWeight: 800 }}>
+            {activeTab === 'timer' && 'Sesja Pracy'}
+            {activeTab === 'profile' && 'Karta Wojownika'}
+            {activeTab === 'shop' && 'Skarbiec Leśny'}
+            {activeTab === 'leaderboard' && 'Arena'}
+          </h2>
           <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
              <div style={{ padding: '4px 12px', backgroundColor: 'var(--surface-container)', borderRadius: '99px', display: 'flex', gap: '8px', alignItems: 'center' }}>
                <span className="material-symbols-outlined" style={{ fontSize: '16px', color: '#f59e0b', fontVariationSettings: "'FILL' 1" }}>toll</span>
@@ -74,64 +105,26 @@ export default function DashboardView({ session }) {
           </div>
         </header>
 
-        <div className="page-container">
-          <section style={{ marginBottom: '48px' }}>
-            <p className="label-text" style={{ color: 'var(--primary)', marginBottom: '8px' }}>Current Standing</p>
-            <h1 style={{ fontSize: '3rem', fontWeight: 900, marginBottom: '16px' }}>Hero Level {profile?.level || 1}</h1>
-            <p className="body-secondary" style={{ maxWidth: '600px' }}>
-              Twoja ścieżka do mistrzostwa koncentracji. Każda sesja przybliża Cię do kolejnego poziomu wtajemniczenia.
-            </p>
-          </section>
-
-          <div className="bento-grid">
-            <div className="card" style={{ gridColumn: 'span 8', backgroundColor: 'var(--surface-container-low)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '16px' }}>
-                <h3 className="label-text">Progress to Level {profile?.level + 1 || 2}</h3>
-                <p style={{ fontWeight: 800 }}>{profile?.total_xp || 0} <span className="label-text">/ 2500 XP</span></p>
-              </div>
-              <div style={{ height: '8px', backgroundColor: 'var(--surface-container-highest)', borderRadius: '99px', overflow: 'hidden' }}>
-                <div style={{ width: '35%', height: '100%', background: 'var(--primary-gradient)', borderRadius: '99px' }}></div>
-              </div>
-            </div>
-
-            <div className="card" style={{ gridColumn: 'span 4', background: 'var(--primary-gradient)', color: 'white' }}>
-              <span className="material-symbols-outlined" style={{ fontSize: '32px', marginBottom: '16px', fontVariationSettings: "'FILL' 1" }}>account_balance_wallet</span>
-              <h3 className="label-text" style={{ color: 'rgba(255,255,255,0.7)' }}>Focus Treasury</h3>
-              <p style={{ fontSize: '2.5rem', fontWeight: 900 }}>{profile?.coins || 0}</p>
-            </div>
-
-            <div className="card" style={{ gridColumn: 'span 4', textAlign: 'center' }}>
-              <span className="material-symbols-outlined" style={{ color: 'var(--primary)', fontSize: '32px', marginBottom: '8px' }}>local_fire_department</span>
-              <p style={{ fontSize: '2rem', fontWeight: 900 }}>{profile?.current_streak || 0}</p>
-              <p className="label-text">Dni Streaka</p>
-            </div>
-
-            <div className="card" style={{ gridColumn: 'span 4', textAlign: 'center' }}>
-              <span className="material-symbols-outlined" style={{ color: 'var(--primary)', fontSize: '32px', marginBottom: '8px' }}>schedule</span>
-              <p style={{ fontSize: '2rem', fontWeight: 900 }}>{(profile?.weekly_focus_seconds || 0 / 3600).toFixed(1)}</p>
-              <p className="label-text">Godzin w tyg.</p>
-            </div>
-
-            <div className="card" style={{ gridColumn: 'span 4', textAlign: 'center' }}>
-              <span className="material-symbols-outlined" style={{ color: 'var(--primary)', fontSize: '32px', marginBottom: '8px' }}>psychology</span>
-              <p style={{ fontSize: '2rem', fontWeight: 900 }}>24</p>
-              <p className="label-text">Deep Sessions</p>
-            </div>
-          </div>
-        </div>
+        {activeTab === 'profile' && <ProfileTab profile={profile} />}
+        {activeTab === 'timer' && <TimerTab session={session} onSessionComplete={fetchProfileFromPython} />}
+        {activeTab === 'shop' && <ShopTab session={session} profile={profile} onUpdateProfile={fetchProfileFromPython} />}
+        {activeTab === 'leaderboard' && <LeaderboardTab session={session} />}
 
         <div style={{ position: 'fixed', bottom: 0, left: 0, width: '100%', height: '20vh', background: 'linear-gradient(to top, var(--surface-container-low), transparent)', pointerEvents: 'none', zIndex: -1 }}></div>
       </main>
 
       <nav className="mobile-nav">
-        <button className="btn-text" style={{ color: 'var(--primary)' }}>
+        <button className="btn-text" style={{ color: activeTab === 'timer' ? 'var(--primary)' : 'var(--on-surface-variant)', border: 'none', background: 'transparent' }} onClick={() => setActiveTab('timer')}>
           <span className="material-symbols-outlined">timer</span>
         </button>
-        <button className="btn-text">
+        <button className="btn-text" style={{ color: activeTab === 'profile' ? 'var(--primary)' : 'var(--on-surface-variant)', border: 'none', background: 'transparent' }} onClick={() => setActiveTab('profile')}>
           <span className="material-symbols-outlined">person</span>
         </button>
-        <button className="btn-text">
+        <button className="btn-text" style={{ color: activeTab === 'shop' ? 'var(--primary)' : 'var(--on-surface-variant)', border: 'none', background: 'transparent' }} onClick={() => setActiveTab('shop')}>
           <span className="material-symbols-outlined">shopping_bag</span>
+        </button>
+        <button className="btn-text" style={{ color: activeTab === 'leaderboard' ? 'var(--primary)' : 'var(--on-surface-variant)', border: 'none', background: 'transparent' }} onClick={() => setActiveTab('leaderboard')}>
+          <span className="material-symbols-outlined">emoji_events</span>
         </button>
       </nav>
     </div>
