@@ -70,21 +70,36 @@ export default function TimerTab({ session, onSessionComplete, timerTheme }) {
     <div className="page-container" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
       
       {/* Circle Animation Container */}
-      <div style={{ position: 'relative', width: '300px', height: '300px', marginBottom: '32px' }}>
+      <div style={{ position: 'relative', width: '300px', height: '300px', marginBottom: '48px' }}>
         <svg viewBox="0 0 100 100" style={{ transform: 'rotate(-90deg)', width: '100%', height: '100%', overflow: 'visible' }}>
           {/* Background Track */}
           <circle 
             cx="50" cy="50" r="45" 
             fill="none" 
             stroke="var(--surface-container-high)" 
-            strokeWidth="4" 
+            strokeWidth="3" 
+            opacity="0.5"
           />
+          
+          {/* Glow Layer (Visual only) */}
+          <circle 
+            className={circleClass}
+            cx="50" cy="50" r="45" 
+            fill="none" 
+            stroke="url(#progress-gradient)"
+            strokeWidth="8" 
+            strokeDasharray="283" 
+            strokeDashoffset={283 - (283 * progressPercent) / 100}
+            strokeLinecap="round"
+            style={{ transition: 'stroke-dashoffset 1s linear', opacity: 0.2, filter: 'blur(8px)' }}
+          />
+
           {/* Progress Indicator */}
           <circle 
             className={circleClass}
             cx="50" cy="50" r="45" 
             fill="none" 
-            stroke="url(#progress-gradient)" 
+            stroke="url(#progress-gradient)"
             strokeWidth="4" 
             strokeDasharray="283" 
             strokeDashoffset={283 - (283 * progressPercent) / 100}
@@ -100,11 +115,25 @@ export default function TimerTab({ session, onSessionComplete, timerTheme }) {
         </svg>
 
         <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-          <span className="material-symbols-outlined" style={{ fontSize: '48px', color: 'var(--primary)', marginBottom: '8px' }}>
-            {isActive ? 'eco' : 'potted_plant'}
-          </span>
-          <div className="logo-font" style={{ fontSize: '3rem', color: 'var(--on-surface)', lineHeight: 1 }}>
-            {minutes}:{seconds}
+          <div style={{ 
+            width: '180px', 
+            height: '180px', 
+            borderRadius: '999px', 
+            backgroundColor: 'rgba(255,255,255,0.05)', 
+            backdropFilter: 'blur(10px)',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            border: '1px solid rgba(255,255,255,0.1)'
+          }}>
+            <span className="material-symbols-outlined" style={{ fontSize: '32px', color: 'var(--primary)', marginBottom: '4px', opacity: 0.8 }}>
+              {isActive ? 'auto_awesome' : 'hourglass_empty'}
+            </span>
+            <div className="logo-font" style={{ fontSize: '3.5rem', color: 'var(--on-surface)', lineHeight: 1, fontWeight: 900, letterSpacing: '-2px' }}>
+              {minutes}:{seconds}
+            </div>
+            <p className="label-text" style={{ fontSize: '0.6rem', marginTop: '4px', opacity: 0.6 }}>FOCUS MODE</p>
           </div>
         </div>
       </div>

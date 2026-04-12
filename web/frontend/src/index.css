@@ -197,8 +197,65 @@ h1, h2, h3, .display {
 .theme-bg-obsidian h1, .theme-bg-obsidian h2, .theme-bg-obsidian h3, .theme-bg-obsidian p, .theme-bg-obsidian span { color: #ffd700 !important; }
 
 /* TIMER THEMES directly on svg elements */
-.theme-timer-neon { stroke: #ff00ff !important; filter: drop-shadow(0 0 10px #ff00ff); }
-.theme-timer-gold { stroke: #ffd700 !important; filter: drop-shadow(0 0 5px #ffd700); }
+.theme-timer-neon { stroke: #ff00ff !important; filter: drop-shadow(0 0 10px #ff00ff); animation: neonPulse 2s ease-in-out infinite; }
+.theme-timer-gold { stroke: #ffd700 !important; filter: drop-shadow(0 0 8px #ffd700); stroke-width: 5 !important; }
 .theme-timer-emerald { stroke: #50c878 !important; filter: drop-shadow(0 0 8px #50c878); }
-.theme-timer-magma { stroke: #ff4500 !important; filter: drop-shadow(0 0 15px #ff4500) drop-shadow(0 0 5px #fff); }
-.theme-timer-matrix { stroke: #00ff00 !important; filter: drop-shadow(0 0 12px #00ff00); stroke-dasharray: 10 20 !important; }
+.theme-timer-magma { stroke: #ff4500 !important; filter: drop-shadow(0 0 15px #ff4500) drop-shadow(0 0 5px #fff); animation: magmaFlow 3s linear infinite; }
+.theme-timer-matrix { stroke: #00ff00 !important; filter: drop-shadow(0 0 12px #00ff00); stroke-dasharray: 4 8 !important; animation: matrixScroll 1s linear infinite; }
+
+/* ADVANCED LEGENDARY & EPIC EFFECTS */
+.theme-timer-legendary-pulse { 
+  stroke: #ffbd00 !important; 
+  filter: drop-shadow(0 0 20px #ffbd00); 
+  stroke-width: 6 !important;
+  animation: legendaryGlow 1.5s ease-in-out infinite;
+}
+
+.theme-timer-cosmic {
+  stroke: #bde0fe !important;
+  filter: drop-shadow(0 0 15px #bde0fe) drop-shadow(0 0 30px #a2d2ff);
+  stroke-dasharray: 1 15 !important;
+  stroke-linecap: round !important;
+  animation: cosmicRotate 10s linear infinite;
+}
+
+.theme-timer-hitech {
+  stroke: #00f2ff !important;
+  filter: drop-shadow(0 0 10px #00f2ff);
+  stroke-dasharray: 60 20 !important;
+  animation: hitechSpin 4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+/* ANIMATION KEYFRAMES */
+@keyframes neonPulse {
+  0%, 100% { filter: drop-shadow(0 0 5px #ff00ff); opacity: 1; }
+  50% { filter: drop-shadow(0 0 20px #ff00ff); opacity: 0.8; }
+}
+
+@keyframes magmaFlow {
+  0% { stroke: #ff4500; }
+  50% { stroke: #ff8c00; }
+  100% { stroke: #ff4500; }
+}
+
+@keyframes matrixScroll {
+  from { stroke-dashoffset: 24; }
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes legendaryGlow {
+  0% { stroke-width: 4; filter: drop-shadow(0 0 10px #ffbd00); }
+  50% { stroke-width: 8; filter: drop-shadow(0 0 30px #ffbd00); }
+  100% { stroke-width: 4; filter: drop-shadow(0 0 10px #ffbd00); }
+}
+
+@keyframes cosmicRotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes hitechSpin {
+  0% { stroke-dashoffset: 0; transform: rotate(0deg); }
+  50% { stroke-dashoffset: 100; }
+  100% { stroke-dashoffset: 0; transform: rotate(360deg); }
+}
