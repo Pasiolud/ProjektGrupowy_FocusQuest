@@ -4,11 +4,12 @@ import ProfileTab from '../components/ProfileTab';
 import TimerTab from '../components/TimerTab';
 import ShopTab from '../components/ShopTab';
 import LeaderboardTab from '../components/LeaderboardTab';
+import InventoryTab from '../components/InventoryTab';
 
 export default function DashboardView({ session }) {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('timer'); // 'timer', 'profile', 'shop', 'leaderboard'
+  const [activeTab, setActiveTab] = useState('timer'); // 'timer', 'profile', 'shop', 'leaderboard', 'inventory'
 
   const fetchProfileFromPython = useCallback(async () => {
     const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
@@ -31,6 +32,15 @@ export default function DashboardView({ session }) {
     fetchProfileFromPython();
   }, [fetchProfileFromPython]);
 
+  let equippedThemes = {};
+  if (profile?.equipped_theme) {
+    try {
+      equippedThemes = JSON.parse(profile.equipped_theme);
+    } catch (e) {}
+  }
+
+  const profileBgStyle = equippedThemes.profile_bg ? { background: equippedThemes.profile_bg } : { backgroundColor: 'var(--surface)' };
+
   return (
     <div style={{ display: 'flex', width: '100%', minHeight: '100vh' }}>
       <aside className="sidebar">
@@ -39,8 +49,12 @@ export default function DashboardView({ session }) {
         </div>
 
         <div style={{ marginBottom: '32px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div style={{ width: '40px', height: '40px', borderRadius: '99px', backgroundColor: 'var(--surface-container-highest)', overflow: 'hidden' }}>
-            <span className="material-symbols-outlined" style={{ fontSize: '24px', margin: '8px', color: 'var(--primary)' }}>person</span>
+          <div style={{ width: '40px', height: '40px', borderRadius: '99px', backgroundColor: 'var(--surface-container-highest)', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            {equippedThemes.avatar_skin ? (
+              <span style={{ fontSize: '24px' }}>{equippedThemes.avatar_skin}</span>
+            ) : (
+              <span className="material-symbols-outlined" style={{ fontSize: '24px', color: 'var(--primary)' }}>person</span>
+            )}
           </div>
           <div>
             <p style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--primary)' }}>Level {profile?.level || 1}</p>
@@ -66,6 +80,14 @@ export default function DashboardView({ session }) {
             <span>Profil</span>
           </button>
           <button 
+            className={`sidebar-item ${activeTab === 'inventory' ? 'active' : ''}`} 
+            style={{ width: '100%', border: 'none', background: activeTab === 'inventory' ? 'var(--surface-container)' : 'transparent', textAlign: 'left', cursor: 'pointer' }}
+            onClick={() => setActiveTab('inventory')}
+          >
+            <span className="material-symbols-outlined">inventory_2</span>
+            <span>Ekwipunek</span>
+          </button>
+          <button 
             className={`sidebar-item ${activeTab === 'shop' ? 'active' : ''}`} 
             style={{ width: '100%', border: 'none', background: activeTab === 'shop' ? 'var(--surface-container)' : 'transparent', textAlign: 'left', cursor: 'pointer' }}
             onClick={() => setActiveTab('shop')}
@@ -88,12 +110,13 @@ export default function DashboardView({ session }) {
         </div>
       </aside>
 
-      <main style={{ flex: 1, backgroundColor: 'var(--surface)' }}>
+      <main style={{ flex: 1, ...profileBgStyle, transition: 'background 0.5s ease' }}>
         <header className="glass-nav" style={{ position: 'sticky', top: 0, padding: '16px 48px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h2 style={{ fontSize: '1.25rem', fontWeight: 800 }}>
+          <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: equippedThemes.profile_bg ? 'white' : 'inherit' }}>
             {activeTab === 'timer' && 'Sesja Pracy'}
             {activeTab === 'profile' && 'Karta Wojownika'}
-            {activeTab === 'shop' && 'Skarbiec Leśny'}
+            {activeTab === 'inventory' && 'Skarbiec Wyposażenia'}
+            {activeTab === 'shop' && 'Kupiec Leśny'}
             {activeTab === 'leaderboard' && 'Arena'}
           </h2>
           <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
@@ -106,11 +129,12 @@ export default function DashboardView({ session }) {
         </header>
 
         {activeTab === 'profile' && <ProfileTab profile={profile} />}
-        {activeTab === 'timer' && <TimerTab session={session} onSessionComplete={fetchProfileFromPython} />}
+        {activeTab === 'timer' && <TimerTab session={session} onSessionComplete={fetchProfileFromPython} timerTheme={equippedThemes.timer_color} />}
+        {activeTab === 'inventory' && <InventoryTab session={session} profile={profile} onUpdateProfile={fetchProfileFromPython} />}
         {activeTab === 'shop' && <ShopTab session={session} profile={profile} onUpdateProfile={fetchProfileFromPython} />}
         {activeTab === 'leaderboard' && <LeaderboardTab session={session} />}
 
-        <div style={{ position: 'fixed', bottom: 0, left: 0, width: '100%', height: '20vh', background: 'linear-gradient(to top, var(--surface-container-low), transparent)', pointerEvents: 'none', zIndex: -1 }}></div>
+        <div style={{ position: 'fixed', bottom: 0, left: 0, width: '100%', height: '20vh', background: 'linear-gradient(to top, rgba(0,0,0,0.1), transparent)', pointerEvents: 'none', zIndex: -1 }}></div>
       </main>
 
       <nav className="mobile-nav">
@@ -120,11 +144,11 @@ export default function DashboardView({ session }) {
         <button className="btn-text" style={{ color: activeTab === 'profile' ? 'var(--primary)' : 'var(--on-surface-variant)', border: 'none', background: 'transparent' }} onClick={() => setActiveTab('profile')}>
           <span className="material-symbols-outlined">person</span>
         </button>
+        <button className="btn-text" style={{ color: activeTab === 'inventory' ? 'var(--primary)' : 'var(--on-surface-variant)', border: 'none', background: 'transparent' }} onClick={() => setActiveTab('inventory')}>
+          <span className="material-symbols-outlined">inventory_2</span>
+        </button>
         <button className="btn-text" style={{ color: activeTab === 'shop' ? 'var(--primary)' : 'var(--on-surface-variant)', border: 'none', background: 'transparent' }} onClick={() => setActiveTab('shop')}>
           <span className="material-symbols-outlined">shopping_bag</span>
-        </button>
-        <button className="btn-text" style={{ color: activeTab === 'leaderboard' ? 'var(--primary)' : 'var(--on-surface-variant)', border: 'none', background: 'transparent' }} onClick={() => setActiveTab('leaderboard')}>
-          <span className="material-symbols-outlined">emoji_events</span>
         </button>
       </nav>
     </div>

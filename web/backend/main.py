@@ -119,43 +119,80 @@ def open_box(req: ShopBuyRequest, db_auth: dict = Depends(get_supabase_client)):
     if profile.get("coins", 0) < req.cost:
          raise HTTPException(status_code=400, detail="Nie masz wystarczającej ilości monet!")
          
-    possible_items = [
-        {"id": "theme_dark", "name": "Motyw Mrocznego Dębu", "icon": "dark_mode"},
-        {"id": "theme_light", "name": "Motyw Słonecznej Brzozy", "icon": "light_mode"},
-        {"id": "sound_rain", "name": "Szum Wiosennego Deszczu", "icon": "water_drop"},
-        {"id": "sound_wind", "name": "Górski Wiatr", "icon": "air"}
-    ]
-    drawn_item = random.choice(possible_items)
+    # Fetch all items from DB
+    items_resp = supabase.table("items").select("*").execute()
+    all_items = items_resp.data
+    if not all_items:
+        raise HTTPException(status_code=500, detail="Items not configured in database!")
+        
+    drawn_item = random.choice(all_items)
     
-    # 50% duplicate chance logic mockup
-    is_duplicate = random.choice([True, False])
+    # Check if user already owns it
+    user_items_resp = supabase.table("user_items").select("*").eq("user_id", user_id).eq("item_id", drawn_item["id"]).execute()
+    is_duplicate = len(user_items_resp.data) > 0
     
     new_coins = profile.get("coins", 0) - req.cost
+    
     if is_duplicate:
         # Refund 50%
         new_coins += int(req.cost / 2)
+    else:
+        # Give item to user
+        supabase.table("user_items").insert({"user_id": user_id, "item_id": drawn_item["id"]}).execute()
         
     supabase.table("profiles").update({"coins": new_coins}).eq("id", user_id).execute()
     
     return {
         "status": "success", 
         "item": {
+            "id": drawn_item["id"],
             "name": drawn_item["name"], 
-            "icon": drawn_item["icon"], 
+            "icon": drawn_item["icon"],
+            "category": drawn_item["category"],
+            "rarity": drawn_item["rarity"],
             "is_duplicate": is_duplicate
         }
     }
 
 
+@app.get("/api/inventory")
+def get_inventory(db_auth: dict = Depends(get_supabase_client)):
+    supabase = db_auth["client"]
+    user_id = db_auth["user_id"]
+    
+    # Fetch user_items joined with items
+    resp = supabase.table("user_items").select("*, items(*)").eq("user_id", user_id).execute()
+    return {"status": "success", "inventory": [x["items"] for x in resp.data if x.get("items")]}
+
+
+class EquipRequest(BaseModel):
+    item_id: str
+    category: str
+    css_value: str
+
+import json
+
+@app.post("/api/inventory/equip")
+def equip_item(req: EquipRequest, db_auth: dict = Depends(get_supabase_client)):
+    supabase = db_auth["client"]
+    user_id = db_auth["user_id"]
+    
+    profile_resp = supabase.table("profiles").select("equipped_theme").eq("id", user_id).execute()
+    profile = profile_resp.data[0]
+    
+    equipped = {}
+    if profile.get("equipped_theme"):
+        equipped = json.loads(profile["equipped_theme"])
+        
+    equipped[req.category] = req.css_value
+    
+    supabase.table("profiles").update({"equipped_theme": json.dumps(equipped)}).eq("id", user_id).execute()
+    
+    return {"status": "success", "equipped_theme": equipped}
+
+
 @app.get("/api/leaderboard")
 def get_leaderboard(db_auth: dict = Depends(get_supabase_client)):
     supabase = db_auth["client"]
-    
-    # Fetch top 10 players based on total_xp. 
-    # Assumes RLS on profiles allows read access for authenticated users to view leaderboards
     resp = supabase.table("profiles").select("id, level, total_xp, current_streak").order("total_xp", desc=True).limit(10).execute()
-    
-    return {
-        "status": "success",
-        "leaderboard": resp.data
-    }
+    return {"status": "success", "leaderboard": resp.data}

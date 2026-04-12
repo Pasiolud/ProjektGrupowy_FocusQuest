@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-export default function TimerTab({ session, onSessionComplete }) {
+export default function TimerTab({ session, onSessionComplete, timerTheme }) {
   const DEFAULT_TIME = 25 * 60; // 25 minutes in seconds
   const [timeLeft, setTimeLeft] = useState(DEFAULT_TIME);
   const [isActive, setIsActive] = useState(false);
@@ -63,6 +63,8 @@ export default function TimerTab({ session, onSessionComplete }) {
   
   // Progress for circle
   const progressPercent = ((DEFAULT_TIME - timeLeft) / DEFAULT_TIME) * 100;
+  
+  const timerGradientStyle = timerTheme ? { stopColor: timerTheme } : { stopColor: 'var(--primary)' };
 
   return (
     <div className="page-container" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
@@ -81,19 +83,21 @@ export default function TimerTab({ session, onSessionComplete }) {
           <circle 
             cx="50" cy="50" r="45" 
             fill="none" 
-            stroke="url(#progress-gradient)" 
+            stroke={timerTheme ? timerTheme : "url(#progress-gradient)"}
             strokeWidth="4" 
             strokeDasharray="283" 
             strokeDashoffset={283 - (283 * progressPercent) / 100}
             strokeLinecap="round"
             style={{ transition: 'stroke-dashoffset 1s linear' }}
           />
-          <defs>
-            <linearGradient id="progress-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="var(--primary)" />
-              <stop offset="100%" stopColor="var(--primary-container)" />
-            </linearGradient>
-          </defs>
+          {!timerTheme && (
+            <defs>
+              <linearGradient id="progress-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="var(--primary)" />
+                <stop offset="100%" stopColor="var(--primary-container)" />
+              </linearGradient>
+            </defs>
+          )}
         </svg>
 
         <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
