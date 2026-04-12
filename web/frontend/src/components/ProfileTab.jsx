@@ -13,13 +13,34 @@ export default function ProfileTab({ profile }) {
 
       <div className="bento-grid">
         <div className="card" style={{ gridColumn: 'span 8', backgroundColor: 'var(--surface-container-low)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '16px' }}>
-            <h3 className="label-text">Progress to Level {profile?.level ? profile.level + 1 : 2}</h3>
-            <p style={{ fontWeight: 800 }}>{profile?.total_xp || 0} <span className="label-text">/ 2500 XP</span></p>
-          </div>
-          <div style={{ height: '8px', backgroundColor: 'var(--surface-container-highest)', borderRadius: '99px', overflow: 'hidden' }}>
-            <div style={{ width: '35%', height: '100%', background: 'var(--primary-gradient)', borderRadius: '99px' }}></div>
-          </div>
+          {(() => {
+             const lvl = profile?.level || 1;
+             const totalXp = profile?.total_xp || 0;
+             
+             // Calculate XP needed for NEXT level jump
+             const xpNeededForNext = 1000 * (lvl**1.5);
+             
+             // Calculate how much XP was needed for all PREVIOUS levels
+             let previousXpSum = 0;
+             for(let i=1; i<lvl; i++) {
+               previousXpSum += 1000 * (i**1.5);
+             }
+             
+             const progressXp = totalXp - previousXpSum;
+             const progressPercent = Math.min(100, (progressXp / xpNeededForNext) * 100);
+
+             return (
+               <>
+                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '16px' }}>
+                   <h3 className="label-text">Progress to Level {lvl + 1}</h3>
+                   <p style={{ fontWeight: 800 }}>{Math.floor(progressXp)} <span className="label-text">/ {Math.floor(xpNeededForNext)} XP</span></p>
+                 </div>
+                 <div style={{ height: '8px', backgroundColor: 'var(--surface-container-highest)', borderRadius: '99px', overflow: 'hidden' }}>
+                   <div style={{ width: `${progressPercent}%`, height: '100%', background: 'var(--primary-gradient)', borderRadius: '99px', transition: 'width 0.5s ease' }}></div>
+                 </div>
+               </>
+             );
+          })()}
         </div>
 
         <div className="card" style={{ gridColumn: 'span 4', background: 'var(--primary-gradient)', color: 'white' }}>
@@ -28,21 +49,27 @@ export default function ProfileTab({ profile }) {
           <p style={{ fontSize: '2.5rem', fontWeight: 900 }}>{profile?.coins || 0}</p>
         </div>
 
-        <div className="card" style={{ gridColumn: 'span 4', textAlign: 'center' }}>
+        <div className="card" style={{ gridColumn: 'span 3', textAlign: 'center' }}>
+          <span className="material-symbols-outlined" style={{ color: 'var(--primary)', fontSize: '32px', marginBottom: '8px' }}>today</span>
+          <p style={{ fontSize: '2rem', fontWeight: 900 }}>{Math.floor((profile?.daily_focus_seconds || 0) / 60)}</p>
+          <p className="label-text">Minuty dzisiaj</p>
+        </div>
+
+        <div className="card" style={{ gridColumn: 'span 3', textAlign: 'center' }}>
           <span className="material-symbols-outlined" style={{ color: 'var(--primary)', fontSize: '32px', marginBottom: '8px' }}>local_fire_department</span>
           <p style={{ fontSize: '2rem', fontWeight: 900 }}>{profile?.current_streak || 0}</p>
           <p className="label-text">Dni Streaka</p>
         </div>
 
-        <div className="card" style={{ gridColumn: 'span 4', textAlign: 'center' }}>
+        <div className="card" style={{ gridColumn: 'span 3', textAlign: 'center' }}>
           <span className="material-symbols-outlined" style={{ color: 'var(--primary)', fontSize: '32px', marginBottom: '8px' }}>schedule</span>
           <p style={{ fontSize: '2rem', fontWeight: 900 }}>{((profile?.weekly_focus_seconds || 0) / 3600).toFixed(1)}</p>
           <p className="label-text">Godzin w tyg.</p>
         </div>
 
-        <div className="card" style={{ gridColumn: 'span 4', textAlign: 'center' }}>
+        <div className="card" style={{ gridColumn: 'span 3', textAlign: 'center' }}>
           <span className="material-symbols-outlined" style={{ color: 'var(--primary)', fontSize: '32px', marginBottom: '8px' }}>psychology</span>
-          <p style={{ fontSize: '2rem', fontWeight: 900 }}>24</p>
+          <p style={{ fontSize: '2rem', fontWeight: 900 }}>{profile?.total_sessions || 0}</p>
           <p className="label-text">Deep Sessions</p>
         </div>
       </div>

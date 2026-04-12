@@ -71,29 +71,71 @@ def complete_session(req: SessionCompleteRequest, db_auth: dict = Depends(get_su
     profile_resp = supabase.table("profiles").select("*").eq("id", user_id).execute()
     if not profile_resp.data:
         raise HTTPException(status_code=404, detail="Profile not found")
-        
+    
     profile = profile_resp.data[0]
     
-    # Calculate rewards based on plan
+    # 1. Earned points
+    # 1 second = 1 XP
+    # 1 minute = 1 Coin
     earned_xp = req.duration_seconds
     earned_coins = int(req.duration_seconds / 60)
     
+    # 2. Daily reset and streak logic
+    now = datetime.now()
+    today_str = now.date().isoformat()
+    last_session_date = profile.get("last_session_date")
+    
+    new_daily_focus = profile.get("daily_focus_seconds", 0)
+    new_streak = profile.get("current_streak", 0)
+    
+    if last_session_date:
+        if last_session_date != today_str:
+            # Different day. Check if streak continued (was it yesterday?)
+            last_date_obj = datetime.strptime(last_session_date, "%Y-%m-%d").date()
+            yesterday_obj = (now - timedelta(days=1)).date()
+            
+            if last_date_obj == yesterday_obj:
+                new_streak += 1
+            elif last_date_obj < yesterday_obj:
+                new_streak = 1 # Streak broken, start fresh
+            
+            new_daily_focus = 0 # It's a new day, reset daily counter
+    else:
+        new_streak = 1 # First session ever
+        new_daily_focus = 0
+            
+    # 3. Apply increments
     new_total_xp = profile.get("total_xp", 0) + earned_xp
     new_coins = profile.get("coins", 0) + earned_coins
-    
-    # Calculate level logarithmically (XP_required = 100 * (level^1.5))
-    theoretical_level = int(math.floor((new_total_xp / 100) ** (1/1.5)))
-    new_level = max(1, theoretical_level)
-    
     new_weekly_focus = profile.get("weekly_focus_seconds", 0) + req.duration_seconds
+    new_daily_focus += req.duration_seconds
+    new_total_sessions = profile.get("total_sessions", 0) + 1
+    
+    # 4. Level Calculation (XP_needed = 1000 * current_level^1.5)
+    # This is a bit more complex. Let's find the level such that Sum_{i=1 to Level-1} (1000 * i^1.5) <= total_xp
+    def get_level(xp):
+        lvl = 1
+        needed = 1000 * (lvl**1.5)
+        remaining = xp
+        while remaining >= needed:
+            remaining -= needed
+            lvl += 1
+            needed = 1000 * (lvl**1.5)
+        return lvl
+
+    new_level = get_level(new_total_xp)
     
     update_data = {
         "total_xp": new_total_xp,
         "coins": new_coins,
         "level": new_level,
-        "weekly_focus_seconds": new_weekly_focus
+        "weekly_focus_seconds": new_weekly_focus,
+        "daily_focus_seconds": new_daily_focus,
+        "total_sessions": new_total_sessions,
+        "current_streak": new_streak,
+        "last_session_date": today_str,
+        "longest_streak": max(new_streak, profile.get("longest_streak", 0))
     }
-    
     supabase.table("profiles").update(update_data).eq("id", user_id).execute()
     
     try:
@@ -103,7 +145,11 @@ def complete_session(req: SessionCompleteRequest, db_auth: dict = Depends(get_su
         print("Session logging skip/error:", e)
         pass # Optional phase
     
-    return {"status": "success", "earned": {"xp": earned_xp, "coins": earned_coins}}
+    return {
+        "status": "success", 
+        "earned": {"xp": earned_xp, "coins": earned_coins},
+        "new_level": new_level
+    }
 
 
 @app.post("/api/shop/open-box")
