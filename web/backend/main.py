@@ -178,14 +178,55 @@ def equip_item(req: EquipRequest, db_auth: dict = Depends(get_supabase_client)):
     user_id = db_auth["user_id"]
     
     profile_resp = supabase.table("profiles").select("equipped_theme").eq("id", user_id).execute()
+    if not profile_resp.data:
+        raise HTTPException(status_code=404, detail="Profile not found")
+        
     profile = profile_resp.data[0]
     
     equipped = {}
-    if profile.get("equipped_theme"):
-        equipped = json.loads(profile["equipped_theme"])
-        
+    raw_theme = profile.get("equipped_theme")
+    if raw_theme:
+        try:
+            # Try to parse existing JSON
+            equipped = json.loads(raw_theme)
+            if not isinstance(equipped, dict):
+                equipped = {}
+        except (json.JSONDecodeError, TypeError):
+            # If it's a plain string like "default", just start fresh
+            equipped = {}
+            
     equipped[req.category] = req.css_value
     
+    supabase.table("profiles").update({"equipped_theme": json.dumps(equipped)}).eq("id", user_id).execute()
+    
+    return {"status": "success", "equipped_theme": equipped}
+
+
+class UnequipRequest(BaseModel):
+    category: str
+
+@app.post("/api/inventory/unequip")
+def unequip_item(req: UnequipRequest, db_auth: dict = Depends(get_supabase_client)):
+    supabase = db_auth["client"]
+    user_id = db_auth["user_id"]
+    
+    profile_resp = supabase.table("profiles").select("equipped_theme").eq("id", user_id).execute()
+    if not profile_resp.data:
+        raise HTTPException(status_code=404, detail="Profile not found")
+        
+    profile = profile_resp.data[0]
+    raw_theme = profile.get("equipped_theme")
+    
+    equipped = {}
+    if raw_theme:
+        try:
+            equipped = json.loads(raw_theme)
+        except:
+            equipped = {}
+            
+    if req.category in equipped:
+        del equipped[req.category]
+        
     supabase.table("profiles").update({"equipped_theme": json.dumps(equipped)}).eq("id", user_id).execute()
     
     return {"status": "success", "equipped_theme": equipped}

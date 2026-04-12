@@ -52,6 +52,26 @@ export default function InventoryTab({ session, profile, onUpdateProfile }) {
     }
   };
 
+  const unequipItem = async (category) => {
+    const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
+    try {
+      const response = await fetch(`${backendUrl}/api/inventory/unequip`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify({ category })
+      });
+      
+      if (!response.ok) throw new Error('Błąd podczas zdejmowania przedmiotu');
+      
+      onUpdateProfile();
+    } catch (err) {
+      setErrorStatus(err.message);
+    }
+  };
+
   let equippedThemes = {};
   if (profile?.equipped_theme) {
     try {
@@ -119,14 +139,23 @@ export default function InventoryTab({ session, profile, onUpdateProfile }) {
                       <h3 style={{ fontSize: '1.1rem', marginBottom: '4px' }}>{item.name}</h3>
                       <p className="label-text" style={{ color: 'var(--primary)' }}>{item.rarity.toUpperCase()}</p>
                       
-                      <button 
-                        className={isEquipped ? 'btn-secondary' : 'btn-primary'} 
-                        style={{ width: '100%', marginTop: '24px' }}
-                        disabled={isEquipped}
-                        onClick={() => equipItem(item)}
-                      >
-                        {isEquipped ? 'Założono' : 'Załóż'}
-                      </button>
+                      {isEquipped ? (
+                        <button 
+                          className="btn-secondary" 
+                          style={{ width: '100%', marginTop: '24px', backgroundColor: 'var(--error)', color: 'white' }}
+                          onClick={() => unequipItem(item.category)}
+                        >
+                          Zdejmij
+                        </button>
+                      ) : (
+                        <button 
+                          className="btn-primary" 
+                          style={{ width: '100%', marginTop: '24px' }}
+                          onClick={() => equipItem(item)}
+                        >
+                          Załóż
+                        </button>
+                      )}
                     </div>
                   );
                 })}
