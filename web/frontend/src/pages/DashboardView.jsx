@@ -9,7 +9,7 @@ import InventoryTab from '../components/InventoryTab';
 export default function DashboardView({ session }) {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('timer'); // 'timer', 'profile', 'shop', 'leaderboard', 'inventory'
+  const [activeTab, setActiveTab] = useState('timer');
 
   const fetchProfileFromPython = useCallback(async () => {
     const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
@@ -39,7 +39,7 @@ export default function DashboardView({ session }) {
     } catch (e) {}
   }
 
-  const profileBgStyle = equippedThemes.profile_bg ? { background: equippedThemes.profile_bg } : { backgroundColor: 'var(--surface)' };
+  const profileBgClass = equippedThemes.profile_bg || '';
 
   return (
     <div style={{ display: 'flex', width: '100%', minHeight: '100vh' }}>
@@ -110,9 +110,9 @@ export default function DashboardView({ session }) {
         </div>
       </aside>
 
-      <main style={{ flex: 1, ...profileBgStyle, transition: 'background 0.5s ease' }}>
+      <main className={profileBgClass} style={{ flex: 1, backgroundColor: equippedThemes.profile_bg ? 'transparent' : 'var(--surface)', transition: 'background 0.5s ease', minHeight: '100vh', position: 'relative' }}>
         <header className="glass-nav" style={{ position: 'sticky', top: 0, padding: '16px 48px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: equippedThemes.profile_bg ? 'white' : 'inherit' }}>
+          <h2 style={{ fontSize: '1.25rem', fontWeight: 800 }}>
             {activeTab === 'timer' && 'Sesja Pracy'}
             {activeTab === 'profile' && 'Karta Wojownika'}
             {activeTab === 'inventory' && 'Skarbiec Wyposażenia'}
@@ -134,7 +134,7 @@ export default function DashboardView({ session }) {
         {activeTab === 'shop' && <ShopTab session={session} profile={profile} onUpdateProfile={fetchProfileFromPython} />}
         {activeTab === 'leaderboard' && <LeaderboardTab session={session} />}
 
-        <div style={{ position: 'fixed', bottom: 0, left: 0, width: '100%', height: '20vh', background: 'linear-gradient(to top, rgba(0,0,0,0.1), transparent)', pointerEvents: 'none', zIndex: -1 }}></div>
+        <div style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', height: '20vh', background: 'linear-gradient(to top, rgba(0,0,0,0.1), transparent)', pointerEvents: 'none', zIndex: 0 }}></div>
       </main>
 
       <nav className="mobile-nav">

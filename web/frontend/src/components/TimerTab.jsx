@@ -58,20 +58,20 @@ export default function TimerTab({ session, onSessionComplete, timerTheme }) {
     setTimeLeft(DEFAULT_TIME);
   };
 
-  const minutes = Math.floor(timeLeft / 60);
-  const seconds = timeLeft % 60;
+  const minutes = String(Math.floor(timeLeft / 60)).padStart(2, '0');
+  const seconds = String(timeLeft % 60).padStart(2, '0');
   
   // Progress for circle
   const progressPercent = ((DEFAULT_TIME - timeLeft) / DEFAULT_TIME) * 100;
   
-  const timerGradientStyle = timerTheme ? { stopColor: timerTheme } : { stopColor: 'var(--primary)' };
+  const circleClass = timerTheme || '';
 
   return (
     <div className="page-container" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
       
       {/* Circle Animation Container */}
       <div style={{ position: 'relative', width: '300px', height: '300px', marginBottom: '32px' }}>
-        <svg viewBox="0 0 100 100" style={{ transform: 'rotate(-90deg)', width: '100%', height: '100%' }}>
+        <svg viewBox="0 0 100 100" style={{ transform: 'rotate(-90deg)', width: '100%', height: '100%', overflow: 'visible' }}>
           {/* Background Track */}
           <circle 
             cx="50" cy="50" r="45" 
@@ -81,23 +81,22 @@ export default function TimerTab({ session, onSessionComplete, timerTheme }) {
           />
           {/* Progress Indicator */}
           <circle 
+            className={circleClass}
             cx="50" cy="50" r="45" 
             fill="none" 
-            stroke={timerTheme ? timerTheme : "url(#progress-gradient)"}
+            stroke="url(#progress-gradient)" 
             strokeWidth="4" 
             strokeDasharray="283" 
             strokeDashoffset={283 - (283 * progressPercent) / 100}
             strokeLinecap="round"
             style={{ transition: 'stroke-dashoffset 1s linear' }}
           />
-          {!timerTheme && (
-            <defs>
-              <linearGradient id="progress-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="var(--primary)" />
-                <stop offset="100%" stopColor="var(--primary-container)" />
-              </linearGradient>
-            </defs>
-          )}
+          <defs>
+            <linearGradient id="progress-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="var(--primary)" />
+              <stop offset="100%" stopColor="var(--primary-container)" />
+            </linearGradient>
+          </defs>
         </svg>
 
         <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
@@ -105,7 +104,7 @@ export default function TimerTab({ session, onSessionComplete, timerTheme }) {
             {isActive ? 'eco' : 'potted_plant'}
           </span>
           <div className="logo-font" style={{ fontSize: '3rem', color: 'var(--on-surface)', lineHeight: 1 }}>
-            {String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}
+            {minutes}:{seconds}
           </div>
         </div>
       </div>

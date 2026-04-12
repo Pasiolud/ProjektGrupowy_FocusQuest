@@ -184,3 +184,21 @@ h1, h2, h3, .display {
     justify-content: space-around;
   }
 }
+
+/* BACKGROUND THEMES */
+.theme-bg-lofi { background: linear-gradient(to top right, #fdfbfb 0%, #ebedee 100%) !important; }
+.theme-bg-cyberpunk { background: linear-gradient(to right, #0f0c29, #302b63, #24243e) !important; color: white !important; }
+.theme-bg-cyberpunk h1, .theme-bg-cyberpunk h2, .theme-bg-cyberpunk h3, .theme-bg-cyberpunk p, .theme-bg-cyberpunk span { color: white !important; }
+.theme-bg-abyss { background-color: #0a0a0a !important; color: #a1a1aa !important; }
+.theme-bg-abyss h1, .theme-bg-abyss h2, .theme-bg-abyss h3, .theme-bg-abyss p, .theme-bg-abyss span { color: #f4f4f5 !important; }
+.theme-bg-forest { background: linear-gradient(to bottom, #132a13, #31572c) !important; color: #e9edc9 !important; }
+.theme-bg-forest h1, .theme-bg-forest h2, .theme-bg-forest h3, .theme-bg-forest p, .theme-bg-forest span { color: #fefae0 !important; }
+.theme-bg-obsidian { background: #16161a !important; color: #d4af37 !important; border-left: 2px solid #d4af37; box-sizing: border-box; }
+.theme-bg-obsidian h1, .theme-bg-obsidian h2, .theme-bg-obsidian h3, .theme-bg-obsidian p, .theme-bg-obsidian span { color: #ffd700 !important; }
+
+/* TIMER THEMES directly on svg elements */
+.theme-timer-neon { stroke: #ff00ff !important; filter: drop-shadow(0 0 10px #ff00ff); }
+.theme-timer-gold { stroke: #ffd700 !important; filter: drop-shadow(0 0 5px #ffd700); }
+.theme-timer-emerald { stroke: #50c878 !important; filter: drop-shadow(0 0 8px #50c878); }
+.theme-timer-magma { stroke: #ff4500 !important; filter: drop-shadow(0 0 15px #ff4500) drop-shadow(0 0 5px #fff); }
+.theme-timer-matrix { stroke: #00ff00 !important; filter: drop-shadow(0 0 12px #00ff00); stroke-dasharray: 10 20 !important; }
