@@ -5,6 +5,7 @@ import TimerTab from '../components/TimerTab';
 import ShopTab from '../components/ShopTab';
 import LeaderboardTab from '../components/LeaderboardTab';
 import InventoryTab from '../components/InventoryTab';
+import GardenTab from '../components/GardenTab';
 
 export default function DashboardView({ session }) {
   const [profile, setProfile] = useState(null);
@@ -88,6 +89,14 @@ export default function DashboardView({ session }) {
             <span>Ekwipunek</span>
           </button>
           <button 
+            className={`sidebar-item ${activeTab === 'garden' ? 'active' : ''}`} 
+            style={{ width: '100%', border: 'none', background: activeTab === 'garden' ? 'var(--surface-container)' : 'transparent', textAlign: 'left', cursor: 'pointer' }}
+            onClick={() => setActiveTab('garden')}
+          >
+            <span className="material-symbols-outlined">potted_plant</span>
+            <span>Ogród</span>
+          </button>
+          <button 
             className={`sidebar-item ${activeTab === 'shop' ? 'active' : ''}`} 
             style={{ width: '100%', border: 'none', background: activeTab === 'shop' ? 'var(--surface-container)' : 'transparent', textAlign: 'left', cursor: 'pointer' }}
             onClick={() => setActiveTab('shop')}
@@ -116,6 +125,7 @@ export default function DashboardView({ session }) {
             {activeTab === 'timer' && 'Sesja Pracy'}
             {activeTab === 'profile' && 'Karta Wojownika'}
             {activeTab === 'inventory' && 'Skarbiec Wyposażenia'}
+            {activeTab === 'garden' && 'Ogród'}
             {activeTab === 'shop' && 'Kupiec Leśny'}
             {activeTab === 'leaderboard' && 'Arena'}
           </h2>
@@ -131,6 +141,7 @@ export default function DashboardView({ session }) {
         {activeTab === 'profile' && <ProfileTab profile={profile} />}
         {activeTab === 'timer' && <TimerTab session={session} onSessionComplete={fetchProfileFromPython} timerTheme={equippedThemes.timer_color} />}
         {activeTab === 'inventory' && <InventoryTab session={session} profile={profile} onUpdateProfile={fetchProfileFromPython} />}
+        {activeTab === 'garden' && <GardenTab session={session} profile={profile} onUpdateProfile={fetchProfileFromPython} />}
         {activeTab === 'shop' && <ShopTab session={session} profile={profile} onUpdateProfile={fetchProfileFromPython} />}
         {activeTab === 'leaderboard' && <LeaderboardTab session={session} />}
 
@@ -140,6 +151,9 @@ export default function DashboardView({ session }) {
       <nav className="mobile-nav">
         <button className="btn-text" style={{ color: activeTab === 'timer' ? 'var(--primary)' : 'var(--on-surface-variant)', border: 'none', background: 'transparent' }} onClick={() => setActiveTab('timer')}>
           <span className="material-symbols-outlined">timer</span>
+        </button>
+        <button className="btn-text" style={{ color: activeTab === 'garden' ? 'var(--primary)' : 'var(--on-surface-variant)', border: 'none', background: 'transparent' }} onClick={() => setActiveTab('garden')}>
+          <span className="material-symbols-outlined">potted_plant</span>
         </button>
         <button className="btn-text" style={{ color: activeTab === 'profile' ? 'var(--primary)' : 'var(--on-surface-variant)', border: 'none', background: 'transparent' }} onClick={() => setActiveTab('profile')}>
           <span className="material-symbols-outlined">person</span>

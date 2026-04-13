@@ -112,7 +112,6 @@ def complete_session(req: SessionCompleteRequest, db_auth: dict = Depends(get_su
     new_total_sessions = profile.get("total_sessions", 0) + 1
     
     # 4. Level Calculation (XP_needed = 1000 * current_level^1.5)
-    # This is a bit more complex. Let's find the level such that Sum_{i=1 to Level-1} (1000 * i^1.5) <= total_xp
     def get_level(xp):
         lvl = 1
         needed = 1000 * (lvl**1.5)
@@ -125,6 +124,25 @@ def complete_session(req: SessionCompleteRequest, db_auth: dict = Depends(get_su
 
     new_level = get_level(new_total_xp)
     
+    # 5. Garden Progression (all active plants grow together)
+    garden_slots = profile.get("garden_slots", [])
+    if isinstance(garden_slots, str): garden_slots = json.loads(garden_slots) # safety
+    
+    for plant in garden_slots:
+        plant["progress"] = plant.get("progress", 0) + req.duration_seconds
+        
+    # 6. Seed Reward (logic: 1 random seed after complete session)
+    seed_pool = [
+        {"type": "oak", "name": "Dąb Mądrości", "rarity": "common", "target": 7200, "value": 2000},
+        {"type": "fire", "name": "Ognisty Kwiat", "rarity": "rare", "target": 14400, "value": 5000},
+        {"type": "star", "name": "Gwiezdne Pnącze", "rarity": "legendary", "target": 28800, "value": 12000}
+    ]
+    new_seed = random.choices(seed_pool, weights=[70, 25, 5], k=1)[0]
+    
+    seed_inventory = profile.get("seed_inventory", [])
+    if isinstance(seed_inventory, str): seed_inventory = json.loads(seed_inventory)
+    seed_inventory.append(new_seed)
+
     update_data = {
         "total_xp": new_total_xp,
         "coins": new_coins,
@@ -134,7 +152,9 @@ def complete_session(req: SessionCompleteRequest, db_auth: dict = Depends(get_su
         "total_sessions": new_total_sessions,
         "current_streak": new_streak,
         "last_session_date": today_str,
-        "longest_streak": max(new_streak, profile.get("longest_streak", 0))
+        "longest_streak": max(new_streak, profile.get("longest_streak", 0)),
+        "garden_slots": json.dumps(garden_slots),
+        "seed_inventory": json.dumps(seed_inventory)
     }
     supabase.table("profiles").update(update_data).eq("id", user_id).execute()
     
@@ -281,5 +301,70 @@ def unequip_item(req: UnequipRequest, db_auth: dict = Depends(get_supabase_clien
 @app.get("/api/leaderboard")
 def get_leaderboard(db_auth: dict = Depends(get_supabase_client)):
     supabase = db_auth["client"]
-    resp = supabase.table("profiles").select("id, level, total_xp, current_streak").order("total_xp", desc=True).limit(10).execute()
+    resp = supabase.table("profiles").select("*").order("total_xp", desc=True).limit(10).execute()
     return {"status": "success", "leaderboard": resp.data}
+
+
+# GARDEN ENDPOINTS
+class PlantRequest(BaseModel):
+    seed_index: int
+
+@app.post("/api/garden/plant")
+def plant_seed(req: PlantRequest, db_auth: dict = Depends(get_supabase_client)):
+    supabase = db_auth["client"]
+    user_id = db_auth["user_id"]
+    
+    profile = supabase.table("profiles").select("garden_slots, seed_inventory").eq("id", user_id).execute().data[0]
+    garden = json.loads(profile["garden_slots"])
+    seeds = json.loads(profile["seed_inventory"])
+    
+    if len(garden) >= 3:
+        raise HTTPException(status_code=400, detail="Ogród jest pełen (max 3 rośliny)")
+    
+    if req.seed_index < 0 or req.seed_index >= len(seeds):
+        raise HTTPException(status_code=400, detail="Nieprawidłowy indeks nasiona")
+    
+    # Move from seeds to garden
+    new_plant = seeds.pop(req.seed_index)
+    new_plant["progress"] = 0
+    new_plant["id"] = str(datetime.now().timestamp())
+    garden.append(new_plant)
+    
+    supabase.table("profiles").update({
+        "garden_slots": json.dumps(garden),
+        "seed_inventory": json.dumps(seeds)
+    }).eq("id", user_id).execute()
+    
+    return {"status": "success", "garden": garden}
+
+class SellRequest(BaseModel):
+    plant_id: str
+
+@app.post("/api/garden/sell")
+def sell_plant(req: SellRequest, db_auth: dict = Depends(get_supabase_client)):
+    supabase = db_auth["client"]
+    user_id = db_auth["user_id"]
+    
+    profile = supabase.table("profiles").select("garden_slots, coins").eq("id", user_id).execute().data[0]
+    garden = json.loads(profile["garden_slots"])
+    
+    plant_to_sell = None
+    for i, p in enumerate(garden):
+        if p.get("id") == req.plant_id:
+            if p["progress"] >= p["target"]:
+                plant_to_sell = garden.pop(i)
+                break
+            else:
+                raise HTTPException(status_code=400, detail="Roślina jeszcze nie wyrosła")
+                
+    if not plant_to_sell:
+        raise HTTPException(status_code=404, detail="Nie znaleziono rośliny do sprzedaży")
+        
+    new_coins = profile["coins"] + plant_to_sell["value"]
+    
+    supabase.table("profiles").update({
+        "garden_slots": json.dumps(garden),
+        "coins": new_coins
+    }).eq("id", user_id).execute()
+    
+    return {"status": "success", "earned": plant_to_sell["value"], "new_coins": new_coins}
