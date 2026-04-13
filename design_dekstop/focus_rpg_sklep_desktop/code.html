@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Focus RPG - Gacha Shop</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "inverse-surface": "#2f3131",
+                        "surface-bright": "#f9f9f9",
+                        "surface-container": "#eeeeee",
+                        "on-secondary-fixed-variant": "#07521d",
+                        "on-primary-fixed": "#002204",
+                        "on-surface-variant": "#3f4a3c",
+                        "error": "#ba1a1a",
+                        "on-error": "#ffffff",
+                        "surface-tint": "#006e1c",
+                        "tertiary-container": "#929e94",
+                        "on-surface": "#1a1c1c",
+                        "inverse-on-surface": "#f1f1f1",
+                        "surface-dim": "#dadada",
+                        "outline-variant": "#becab9",
+                        "primary": "#006e1c",
+                        "on-primary": "#ffffff",
+                        "background": "#f9f9f9",
+                        "surface-variant": "#e2e2e2",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary": "#286b33",
+                        "tertiary-fixed": "#d9e6da",
+                        "secondary-container": "#abf4ac",
+                        "on-secondary": "#ffffff",
+                        "on-tertiary-fixed-variant": "#3e4a41",
+                        "primary-container": "#4caf50",
+                        "tertiary-fixed-dim": "#bdcabe",
+                        "secondary-fixed": "#abf4ac",
+                        "tertiary": "#556158",
+                        "on-tertiary-container": "#2a352d",
+                        "secondary-fixed-dim": "#90d792",
+                        "surface-container-high": "#e8e8e8",
+                        "outline": "#6f7a6b",
+                        "on-tertiary": "#ffffff",
+                        "inverse-primary": "#78dc77",
+                        "primary-fixed-dim": "#78dc77",
+                        "on-background": "#1a1c1c",
+                        "primary-fixed": "#94f990",
+                        "on-primary-fixed-variant": "#005313",
+                        "on-primary-container": "#003c0b",
+                        "on-secondary-container": "#2e7238",
+                        "surface": "#f9f9f9",
+                        "error-container": "#ffdad6",
+                        "on-secondary-fixed": "#002107",
+                        "on-tertiary-fixed": "#131e17",
+                        "surface-container-low": "#f3f3f3",
+                        "surface-container-highest": "#e2e2e2",
+                        "on-error-container": "#93000a"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Inter"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .organic-gradient {
+            background: linear-gradient(135deg, #006e1c 0%, #4caf50 100%);
+        }
+        body {
+            background-color: #f9f9f9;
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body class="text-on-surface">
+<!-- SideNavBar Anchor -->
+<aside class="hidden md:flex flex-col h-full py-8 gap-4 h-screen w-64 left-0 top-0 fixed bg-[#f3f3f3] dark:bg-zinc-950 z-40">
+<div class="px-8 mb-8">
+<h1 class="text-xl font-black text-[#1a1c1c] dark:text-white">Focus RPG</h1>
+</div>
+<div class="px-4 mb-10">
+<div class="flex items-center gap-3 p-3 bg-surface-container-lowest rounded-xl">
+<div class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container">
+<span class="material-symbols-outlined">person</span>
+</div>
+<div>
+<p class="font-['Inter'] text-sm font-semibold text-primary">Hero Level 12</p>
+<p class="text-xs text-on-surface-variant">2,450 Gold</p>
+</div>
+</div>
+</div>
+<nav class="flex flex-col gap-2">
+<!-- Timer Tab -->
+<a class="flex items-center gap-3 py-3 hover:bg-[#eeeeee] transition-all text-[#3f4a3c] pl-5 font-['Inter'] text-sm font-semibold" href="#">
+<span class="material-symbols-outlined">timer</span>
+<span>Timer</span>
+</a>
+<!-- Profile Tab -->
+<a class="flex items-center gap-3 py-3 hover:bg-[#eeeeee] transition-all text-[#3f4a3c] pl-5 font-['Inter'] text-sm font-semibold" href="#">
+<span class="material-symbols-outlined">person</span>
+<span>Profile</span>
+</a>
+<!-- Shop Tab (Active) -->
+<a class="flex items-center gap-3 py-3 hover:bg-[#eeeeee] transition-all text-[#006e1c] font-bold border-l-4 border-[#006e1c] pl-4 font-['Inter'] text-sm" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">shopping_bag</span>
+<span>Shop</span>
+</a>
+</nav>
+<div class="mt-auto px-6">
+<button class="w-full organic-gradient text-white py-3 rounded-xl font-bold text-sm shadow-black/10 shadow-lg">
+                Start Focus
+            </button>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="md:ml-64 min-h-screen p-8 lg:p-12">
+<!-- Header & Balance Shell -->
+<header class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+<div class="max-w-2xl">
+<span class="font-['Inter'] tracking-[0.05em] text-xs font-medium uppercase text-primary mb-2 block">Premium Marketplace</span>
+<h2 class="text-4xl md:text-5xl font-extrabold tracking-tighter text-on-surface">The Alchemist's Shop</h2>
+<p class="mt-4 text-on-surface-variant max-w-md leading-relaxed">
+                    Convert your hard-earned focus minutes into legendary artifacts and companion eggs.
+                </p>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm border-b-4 border-primary/10 flex flex-col items-center min-w-[200px]">
+<span class="text-[10px] font-bold uppercase tracking-widest text-outline mb-1">Your Balance</span>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-3xl" style="font-variation-settings: 'FILL' 1;">toll</span>
+<span class="text-3xl font-black text-on-surface">1,250</span>
+</div>
+</div>
+</header>
+<!-- Bento Grid Loot Boxes -->
+<section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
+<!-- Common Box -->
+<div class="group bg-surface-container-lowest p-6 rounded-xl hover:bg-surface-container-low transition-all duration-300 flex flex-col h-full">
+<div class="w-16 h-16 rounded-full bg-surface-container mb-6 flex items-center justify-center text-outline group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-4xl">package_2</span>
+</div>
+<h3 class="text-xl font-bold text-on-surface mb-2">Common</h3>
+<p class="text-sm text-on-surface-variant mb-8 flex-grow">A humble wooden crate containing basic supplies and occasional bronze tokens.</p>
+<div class="mt-auto">
+<button class="w-full flex items-center justify-center gap-2 py-3 rounded-lg bg-surface-container-high text-primary font-bold hover:bg-primary hover:text-white transition-colors">
+<span class="text-sm">50</span>
+<span class="material-symbols-outlined text-sm">toll</span>
+<span class="ml-2 uppercase tracking-tighter text-xs">Open</span>
+</button>
+</div>
+</div>
+<!-- Rare Box -->
+<div class="group bg-surface-container-lowest p-6 rounded-xl hover:bg-surface-container-low transition-all duration-300 flex flex-col h-full relative overflow-hidden">
+<div class="w-16 h-16 rounded-full bg-secondary-container/30 mb-6 flex items-center justify-center text-secondary group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-4xl">inventory_2</span>
+</div>
+<h3 class="text-xl font-bold text-on-surface mb-2">Rare</h3>
+<p class="text-sm text-on-surface-variant mb-8 flex-grow">Sturdy iron-bound chests filled with uncommon gear and silver focus charms.</p>
+<div class="mt-auto">
+<button class="w-full flex items-center justify-center gap-2 py-3 rounded-lg bg-surface-container-high text-primary font-bold hover:bg-primary hover:text-white transition-colors">
+<span class="text-sm">120</span>
+<span class="material-symbols-outlined text-sm">toll</span>
+<span class="ml-2 uppercase tracking-tighter text-xs">Open</span>
+</button>
+</div>
+</div>
+<!-- Epic Box -->
+<div class="group bg-surface-container-lowest p-6 rounded-xl hover:bg-surface-container-low transition-all duration-300 flex flex-col h-full border-t-2 border-primary/20">
+<div class="w-16 h-16 rounded-full bg-primary-container/20 mb-6 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-4xl" style="font-variation-settings: 'FILL' 1;">card_giftcard</span>
+</div>
+<h3 class="text-xl font-bold text-on-surface mb-2">Epic</h3>
+<p class="text-sm text-on-surface-variant mb-8 flex-grow">Glowing crystalline containers holding powerful artifacts and gold relics.</p>
+<div class="mt-auto">
+<button class="w-full flex items-center justify-center gap-2 py-3 rounded-lg bg-surface-container-high text-primary font-bold hover:bg-primary hover:text-white transition-colors">
+<span class="text-sm">200</span>
+<span class="material-symbols-outlined text-sm">toll</span>
+<span class="ml-2 uppercase tracking-tighter text-xs">Open</span>
+</button>
+</div>
+</div>
+<!-- Legendary Box -->
+<div class="group organic-gradient p-1 rounded-xl flex flex-col h-full shadow-xl shadow-primary/10">
+<div class="bg-surface-container-lowest p-5 rounded-[calc(0.75rem-1px)] h-full flex flex-col">
+<div class="w-16 h-16 rounded-full organic-gradient mb-6 flex items-center justify-center text-white group-hover:rotate-12 transition-transform">
+<span class="material-symbols-outlined text-4xl" style="font-variation-settings: 'FILL' 1;">workspace_premium</span>
+</div>
+<h3 class="text-xl font-bold text-on-surface mb-2">Legendary</h3>
+<p class="text-sm text-on-surface-variant mb-8 flex-grow font-medium">Ancient celestial orbs pulsing with the energy of masters. Guaranteed Mythic loot.</p>
+<div class="mt-auto">
+<button class="w-full flex items-center justify-center gap-2 py-3 rounded-lg organic-gradient text-white font-black transition-opacity hover:opacity-90">
+<span class="text-sm">500</span>
+<span class="material-symbols-outlined text-sm">toll</span>
+<span class="ml-2 uppercase tracking-tighter text-xs">Open</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Daily Deal Banner -->
+<section class="relative rounded-xl overflow-hidden mb-12">
+<div class="absolute inset-0 bg-zinc-900">
+<img alt="" class="w-full h-full object-cover opacity-40 mix-blend-luminosity" data-alt="cinematic close-up of a mystical glowing green crystal inside a dark ancient stone chamber with soft dust particles" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB-GDgnMtlUZYTd1PyxXFP5BZ-Ulj5OY5EYWeSWkhBEu4RMpG2ckI7naJeB_IaMGkePJMKF-mTeMruwhcca2wu7YUpzKhx2HqVCumXYBJLICCyC-CX-dFJ2D1y4a6hzeN2SsdmAAV5JlprtxQBQgMU1atKb54E8gp4l_YFLq3jaE6ezb_yqszo49usRWOGoETDXm_FOnxW3osyTmvIIMHfmH0fUUyVb97V9KXY1VP1_JgDTymmoB7xXZTMpt5Gf6ZSfpefF6f2IUUAg"/>
+</div>
+<div class="relative z-10 p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-8">
+<div>
+<div class="inline-block px-3 py-1 bg-primary text-white text-[10px] font-bold uppercase tracking-widest rounded mb-4">Daily Deal</div>
+<h4 class="text-3xl font-black text-white tracking-tight mb-2">The Emerald Phoenix Egg</h4>
+<p class="text-zinc-300 max-w-lg">A unique companion that boosts focus XP by 15%. Only available for the next 4 hours.</p>
+</div>
+<div class="flex items-center gap-6">
+<div class="text-right">
+<span class="block text-zinc-400 line-through text-sm">1,200 Gold</span>
+<span class="block text-primary-fixed font-black text-2xl">850 Gold</span>
+</div>
+<button class="px-8 py-4 bg-white text-on-surface font-bold rounded-xl hover:bg-primary-fixed transition-colors">
+                        Claim Now
+                    </button>
+</div>
+</div>
+</section>
+<!-- Featured Items Footer Section -->
+<section class="bg-surface-container rounded-2xl p-8">
+<div class="flex items-center justify-between mb-8">
+<h5 class="text-lg font-bold text-on-surface">Recent Global Pulls</h5>
+<div class="flex gap-2">
+<div class="w-2 h-2 rounded-full bg-primary"></div>
+<div class="w-2 h-2 rounded-full bg-outline-variant"></div>
+<div class="w-2 h-2 rounded-full bg-outline-variant"></div>
+</div>
+</div>
+<div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+<!-- User Activity -->
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-surface-container-high overflow-hidden border border-outline-variant/30">
+<img alt="" data-alt="portrait of a young man with a friendly expression in soft studio lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAyPzNXClubN94gBHQy0eAHNWyj8V1jS9DlaDZ6BQEIgDwKw-MCkPOu6A76jvj0l6YEFvotYGIt0BHYUDOcKg9H02eYMAniCe6_ORkOfyeZi8dd-hkFvaMLfD-GfyE6NltBEnHB-JurnlCpciV-y9ip8aDkOu9Uh5xSemC5eMwWngjR_43RhSrZNk8NucGKXL5CUoD5mkYS8XluujoyWUouTI5rzcTHONNajrkhdCRcKbAO7lbpzeRNNzpAYGnPwE4Dmex7WZiMkYqB"/>
+</div>
+<div class="text-[10px]">
+<p class="font-bold">Alex_88</p>
+<p class="text-primary font-medium">Legendary Pull!</p>
+</div>
+</div>
+<div class="flex items-center gap-3 opacity-70">
+<div class="w-8 h-8 rounded-full bg-surface-container-high overflow-hidden border border-outline-variant/30">
+<img alt="" data-alt="portrait of a smiling woman with glasses in natural daylight" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCQZBcdqKnd_pom4TGMnDf5H_5Ly7J8fPqHkjQc8Nfd70RQqcEQ0LXfPbeoA3dTcNX2XLWHIhZoEjfbEzDdRaHoWa9dQTVVq8s0Q1cpXUwA58tqwkjtcqALywSOYYYua6Uk6FPYbq_RLpY_YHnZYgKArkzuxPFWAWIQLD-bbSzIzKuDVnZ5cVX0d8xIkDjbQNJzPt5tKIJgcbnfVAWItvTNC3CnALN68gvn285Mo5pRvMnH3x_xY8q5wGAuyYfIeZdUdi2n78QLRRw0"/>
+</div>
+<div class="text-[10px]">
+<p class="font-bold">ElenaV</p>
+<p class="text-on-surface-variant">Rare Loot</p>
+</div>
+</div>
+<div class="flex items-center gap-3 opacity-60">
+<div class="w-8 h-8 rounded-full bg-surface-container-high overflow-hidden border border-outline-variant/30">
+<img alt="" data-alt="close-up portrait of a man with a beard wearing a beanie" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCQDgsz25NTb54N8NUp_8CAtdgm19gRgiVBXPxjm4eV46B0Hk6PBCnQ96FI9FT8o4PYRQQzKEOg_v8y1Rz6F1MqJeL3tkuVeBTf5mSLKUkb9CMwZQHBkvCYtkDrONN8PFlx3sVDuNxTDOyaIkvGi2CqRDjydbG70sYZNNN5IMccniEXLmr-q8172pVUwd21QUOadKn-WXqUQf92jIrifvPjs10Sgk5hA8BzpEljORGW21cFvAX_IzVJ5i-tnd8SAFrHdg74_RqhzepM"/>
+</div>
+<div class="text-[10px]">
+<p class="font-bold">FocusKing</p>
+<p class="text-on-surface-variant">Common Loot</p>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- TopNavBar for Mobile (Hidden on Desktop per instruction, but following hierarchy) -->
+<nav class="md:hidden fixed top-0 w-full z-50 bg-[#f9f9f9]/85 backdrop-blur-md px-4 py-4 flex justify-between items-center shadow-sm shadow-black/5">
+<div class="text-xl font-bold tracking-tighter text-[#1a1c1c]">Focus RPG</div>
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary">toll</span>
+<span class="font-bold text-sm">1,250</span>
+</div>
+</nav>
+<!-- BottomNavBar for Mobile -->
+<nav class="md:hidden fixed bottom-0 w-full bg-surface-container-lowest py-3 px-6 flex justify-between items-center z-50 shadow-[0_-4px_20px_-5px_rgba(0,0,0,0.1)]">
+<button class="flex flex-col items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined">timer</span>
+<span class="text-[10px] font-bold uppercase tracking-wider">Timer</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-primary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">shopping_bag</span>
+<span class="text-[10px] font-bold uppercase tracking-wider">Shop</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined">person</span>
+<span class="text-[10px] font-bold uppercase tracking-wider">Profile</span>
+</button>
+</nav>
+</body></html>

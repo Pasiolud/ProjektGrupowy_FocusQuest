@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Focus RPG - Timer</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "inverse-surface": "#2f3131",
+                    "surface-bright": "#f9f9f9",
+                    "surface-container": "#eeeeee",
+                    "on-secondary-fixed-variant": "#07521d",
+                    "on-primary-fixed": "#002204",
+                    "on-surface-variant": "#3f4a3c",
+                    "error": "#ba1a1a",
+                    "on-error": "#ffffff",
+                    "surface-tint": "#006e1c",
+                    "tertiary-container": "#929e94",
+                    "on-surface": "#1a1c1c",
+                    "inverse-on-surface": "#f1f1f1",
+                    "surface-dim": "#dadada",
+                    "outline-variant": "#becab9",
+                    "primary": "#006e1c",
+                    "on-primary": "#ffffff",
+                    "background": "#f9f9f9",
+                    "surface-variant": "#e2e2e2",
+                    "surface-container-lowest": "#ffffff",
+                    "secondary": "#286b33",
+                    "tertiary-fixed": "#d9e6da",
+                    "secondary-container": "#abf4ac",
+                    "on-secondary": "#ffffff",
+                    "on-tertiary-fixed-variant": "#3e4a41",
+                    "primary-container": "#4caf50",
+                    "tertiary-fixed-dim": "#bdcabe",
+                    "secondary-fixed": "#abf4ac",
+                    "tertiary": "#556158",
+                    "on-tertiary-container": "#2a352d",
+                    "secondary-fixed-dim": "#90d792",
+                    "surface-container-high": "#e8e8e8",
+                    "outline": "#6f7a6b",
+                    "on-tertiary": "#ffffff",
+                    "inverse-primary": "#78dc77",
+                    "primary-fixed-dim": "#78dc77",
+                    "on-background": "#1a1c1c",
+                    "primary-fixed": "#94f990",
+                    "on-primary-fixed-variant": "#005313",
+                    "on-primary-container": "#003c0b",
+                    "on-secondary-container": "#2e7238",
+                    "surface": "#f9f9f9",
+                    "error-container": "#ffdad6",
+                    "on-secondary-fixed": "#002107",
+                    "on-tertiary-fixed": "#131e17",
+                    "surface-container-low": "#f3f3f3",
+                    "surface-container-highest": "#e2e2e2",
+                    "on-error-container": "#93000a"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Inter"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .timer-glow {
+            box-shadow: 0 0 50px -12px rgba(76, 175, 80, 0.2);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface flex min-h-screen">
+<!-- SideNavBar (Desktop Shell) -->
+<aside class="hidden md:flex flex-col h-screen w-64 left-0 top-0 fixed bg-[#f3f3f3] dark:bg-zinc-950 py-8 gap-4 z-40">
+<div class="px-8 mb-8">
+<h1 class="text-xl font-black text-[#1a1c1c] dark:text-white tracking-tighter">Focus RPG</h1>
+</div>
+<div class="flex flex-col gap-1 flex-1">
+<a class="flex items-center gap-3 py-3 text-[#006e1c] dark:text-[#94f990] font-bold border-l-4 border-[#006e1c] pl-4 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="timer">timer</span>
+<span class="font-['Inter'] text-sm font-semibold">Timer</span>
+</a>
+<a class="flex items-center gap-3 py-3 text-[#3f4a3c] dark:text-zinc-500 pl-5 hover:bg-[#eeeeee] dark:hover:bg-zinc-800 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="font-['Inter'] text-sm font-semibold">Profile</span>
+</a>
+<a class="flex items-center gap-3 py-3 text-[#3f4a3c] dark:text-zinc-500 pl-5 hover:bg-[#eeeeee] dark:hover:bg-zinc-800 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="shopping_bag">shopping_bag</span>
+<span class="font-['Inter'] text-sm font-semibold">Shop</span>
+</a>
+</div>
+<div class="mt-auto px-6 py-6 mx-4 rounded-xl bg-surface-container">
+<div class="flex items-center gap-3 mb-3">
+<img class="w-10 h-10 rounded-full object-cover" data-alt="high quality portrait of a fantasy hero avatar with glowing green accents and nature-inspired armor" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDpIHL4-D-PbYm2D52OF4YgfpLKYv2yi8AaLz76-N92BaVdGK9afT5B1uuxH6XzdmEZL9_vWnmZhPdgc1xoOqt_PMEQNuHeaWqYqOZVfnFM4IHbNIjKmVuA7s8TdGlICVj1GV0PQkDOSFdtH9GRCP71nd2iNzp0CZDSjapZoBNbz6dp0hEmet3QXr8k9ZKJRdgB6eCwQbb57lSvT5VLuxaZTSnRFtNqASh7RkkTXXFZxZ92-nyh1SIcdFhYYZX2y5hl9AjY7BS5cnMa"/>
+<div>
+<p class="text-sm font-bold text-[#1a1c1c]">Hero Level 12</p>
+<p class="text-xs text-on-surface-variant">2,450 Gold</p>
+</div>
+</div>
+<button class="w-full bg-gradient-to-br from-[#006e1c] to-[#4caf50] text-white py-2 rounded-xl text-sm font-bold active:scale-95 transition-all">
+                Start Focus
+            </button>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="flex-1 md:ml-64 relative min-h-screen">
+<!-- TopAppBar (Large) -->
+<header class="flex justify-between items-center w-full px-8 py-4 max-w-full mx-auto bg-[#f9f9f9]/85 backdrop-blur-md dark:bg-zinc-900/85 docked full-width top-0 z-50 shadow-sm shadow-black/5">
+<div class="flex items-center gap-6">
+<div class="md:hidden text-2xl font-bold tracking-tighter text-[#1a1c1c] dark:text-white">Focus RPG</div>
+<nav class="hidden md:flex gap-8">
+<a class="font-['Inter'] tracking-tight text-sm font-medium uppercase tracking-[0.05em] text-[#006e1c] dark:text-[#4caf50] border-b-2 border-[#006e1c] pb-1" href="#">Timer</a>
+<a class="font-['Inter'] tracking-tight text-sm font-medium uppercase tracking-[0.05em] text-[#3f4a3c] dark:text-zinc-400 hover:text-[#006e1c] transition-colors" href="#">Profile</a>
+<a class="font-['Inter'] tracking-tight text-sm font-medium uppercase tracking-[0.05em] text-[#3f4a3c] dark:text-zinc-400 hover:text-[#006e1c] transition-colors" href="#">Shop</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-2 px-3 py-1 bg-surface-container rounded-full">
+<span class="material-symbols-outlined text-sm" data-icon="toll">toll</span>
+<span class="text-xs font-bold">2,450</span>
+</div>
+<div class="flex items-center gap-2 px-3 py-1 bg-primary-container text-on-primary-container rounded-full">
+<span class="material-symbols-outlined text-sm" data-icon="military_tech">military_tech</span>
+<span class="text-xs font-bold uppercase tracking-wider">Level 12</span>
+</div>
+</div>
+</header>
+<!-- Focus Timer View -->
+<div class="p-8 md:p-16 max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+<!-- Left Column: Growth Status -->
+<div class="lg:col-span-4 space-y-8 order-2 lg:order-1">
+<div class="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary rounded-full">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">eco</span>
+<span class="text-xs font-bold uppercase tracking-[0.08em]">Ready to Grow</span>
+</div>
+<div class="bg-surface-container-low p-8 rounded-xl space-y-6">
+<div class="space-y-2">
+<h2 class="text-3xl font-black tracking-tight">Oak Seedling</h2>
+<p class="text-on-surface-variant leading-relaxed">Focus for 25 minutes to nurture this seedling into a sturdy sprout.</p>
+</div>
+<div class="aspect-square bg-white rounded-xl flex items-center justify-center p-8 relative overflow-hidden">
+<img class="w-full h-full object-contain" data-alt="a tiny oak seedling growing in a minimalist porcelain pot, soft botanical lighting, macro photography style with blurred natural background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuArCkuZkFJoXtFuyX0zoRbIGIZWBrFzKsFH9kedXQft836xqjYCgHk5LUKfyiLijpuiz_xoe_cKdnP1s2X2W-TcdLpWNUVK0LzFWWVz4HgOz_JpwZ5Qj7ar1TeeDbBUydkVwFGG7Pk6QbsPr9w523_3jh8wBJricoB9lRQJCJDgJexrR_nSMiGuKGDoi8NYT5n4vSMUbyB7LkJO-pyhtrIadeqMWNgGldRDaC8rM_KUlFaa1lacIIrv_gMIqenMJDHaSCwSi3P4WckS"/>
+<div class="absolute inset-0 bg-gradient-to-t from-white/40 to-transparent"></div>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="bg-surface-container p-4 rounded-lg">
+<span class="block text-[10px] uppercase tracking-widest text-on-surface-variant mb-1">Reward XP</span>
+<div class="flex items-center gap-2 font-black text-primary text-xl">
+<span>+150</span>
+</div>
+</div>
+<div class="bg-surface-container p-4 rounded-lg">
+<span class="block text-[10px] uppercase tracking-widest text-on-surface-variant mb-1">Reward Gold</span>
+<div class="flex items-center gap-2 font-black text-secondary text-xl">
+<span>+25</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Column: The Timer Shell -->
+<div class="lg:col-span-8 flex flex-col items-center order-1 lg:order-2">
+<div class="relative w-full max-w-[500px] aspect-square flex flex-col items-center justify-center">
+<!-- Progress Ring (SVG) -->
+<svg class="absolute inset-0 w-full h-full -rotate-90">
+<circle class="text-surface-container-highest" cx="50%" cy="50%" fill="none" r="48%" stroke="currentColor" stroke-width="2"></circle>
+<circle cx="50%" cy="50%" fill="none" r="48%" stroke="url(#timerGradient)" stroke-dasharray="1000" stroke-dashoffset="250" stroke-linecap="round" stroke-width="4"></circle>
+<defs>
+<lineargradient id="timerGradient" x1="0%" x2="100%" y1="0%" y2="100%">
+<stop offset="0%" style="stop-color:#006e1c"></stop>
+<stop offset="100%" style="stop-color:#4caf50"></stop>
+</lineargradient>
+</defs>
+</svg>
+<!-- Timer Face -->
+<div class="timer-glow bg-white w-[88%] h-[88%] rounded-full flex flex-col items-center justify-center relative z-10 border-[16px] border-surface">
+<span class="text-8xl md:text-9xl font-black tracking-tighter text-[#1a1c1c]">25:00</span>
+<div class="mt-4 flex items-center gap-2 text-on-surface-variant font-medium">
+<span class="material-symbols-outlined text-sm" data-icon="potted_plant">potted_plant</span>
+<span class="text-sm uppercase tracking-widest">Focus Session</span>
+</div>
+</div>
+</div>
+<!-- Control Buttons -->
+<div class="mt-12 flex items-center gap-6 w-full max-w-sm">
+<button class="flex-1 h-16 bg-gradient-to-br from-[#006e1c] to-[#4caf50] text-white rounded-xl font-bold text-lg active:scale-95 transition-all shadow-lg shadow-primary/20">
+                        Start Focus
+                    </button>
+<button class="px-8 h-16 bg-surface-container-high text-[#006e1c] rounded-xl font-bold text-lg active:scale-95 transition-all">
+                        Cancel
+                    </button>
+</div>
+<div class="mt-8 flex gap-4">
+<div class="flex flex-col items-center">
+<div class="w-1.5 h-1.5 rounded-full bg-primary mb-1"></div>
+<span class="text-[10px] font-bold text-on-surface uppercase tracking-tighter">Pomo</span>
+</div>
+<div class="flex flex-col items-center opacity-30">
+<div class="w-1.5 h-1.5 rounded-full bg-surface-container-highest mb-1"></div>
+<span class="text-[10px] font-bold text-on-surface-variant uppercase tracking-tighter">Short</span>
+</div>
+<div class="flex flex-col items-center opacity-30">
+<div class="w-1.5 h-1.5 rounded-full bg-surface-container-highest mb-1"></div>
+<span class="text-[10px] font-bold text-on-surface-variant uppercase tracking-tighter">Long</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Floating Section Divider -->
+<div class="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-surface-container-low to-transparent pointer-events-none"></div>
+</main>
+<!-- Mobile Navigation Shell (Bottom) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full bg-white/90 backdrop-blur-lg border-t border-outline-variant/15 flex justify-around items-center py-3 px-6 z-50">
+<button class="flex flex-col items-center gap-1 text-primary">
+<span class="material-symbols-outlined" data-icon="timer" style="font-variation-settings: 'FILL' 1;">timer</span>
+<span class="text-[10px] font-bold uppercase">Timer</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="text-[10px] font-bold uppercase">Profile</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="shopping_bag">shopping_bag</span>
+<span class="text-[10px] font-bold uppercase">Shop</span>
+</button>
+</nav>
+</body></html>

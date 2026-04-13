@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/navigation_timer"
+        android:icon="@android:drawable/ic_menu_recent_history"
+        android:title="Timer" />
+    <item
+        android:id="@+id/navigation_garden"
+        android:icon="@android:drawable/ic_menu_gallery"
+        android:title="Ogród" />
+    <item
+        android:id="@+id/navigation_profile"
+        android:icon="@android:drawable/ic_menu_myplaces"
+        android:title="Profil" />
+</menu>
