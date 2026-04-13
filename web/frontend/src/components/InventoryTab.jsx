@@ -74,10 +74,15 @@ export default function InventoryTab({ session, profile, onUpdateProfile }) {
 
   let equippedThemes = {};
   if (profile?.equipped_theme) {
-    try {
-      equippedThemes = JSON.parse(profile.equipped_theme);
-    } catch (e) {
-      console.error('Invalid equipped_theme format:', e);
+    const et = profile.equipped_theme;
+    if (typeof et === 'string') {
+      try {
+        equippedThemes = JSON.parse(et);
+      } catch (e) {
+        console.error('Invalid equipped_theme format:', e);
+      }
+    } else {
+      equippedThemes = et;
     }
   }
 

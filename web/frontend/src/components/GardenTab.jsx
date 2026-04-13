@@ -4,8 +4,16 @@ export default function GardenTab({ session, profile, onUpdateProfile }) {
   const [errorStatus, setErrorStatus] = useState('');
   const [activeTab, setActiveTab] = useState('active'); // active | seeds
 
-  const gardenSlots = profile?.garden_slots ? JSON.parse(profile.garden_slots) : [];
-  const seeds = profile?.seed_inventory ? JSON.parse(profile.seed_inventory) : [];
+  const safeParse = (val) => {
+    if (!val) return [];
+    if (typeof val === 'string') {
+      try { return JSON.parse(val); } catch (e) { return []; }
+    }
+    return val;
+  };
+
+  const gardenSlots = safeParse(profile?.garden_slots);
+  const seeds = safeParse(profile?.seed_inventory);
 
   const plantSeed = async (index) => {
     const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';

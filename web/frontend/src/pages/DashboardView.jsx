@@ -35,9 +35,16 @@ export default function DashboardView({ session }) {
 
   let equippedThemes = {};
   if (profile?.equipped_theme) {
-    try {
-      equippedThemes = JSON.parse(profile.equipped_theme);
-    } catch (e) {}
+    const et = profile.equipped_theme;
+    if (typeof et === 'string') {
+      try {
+        equippedThemes = JSON.parse(et);
+      } catch (e) {
+        console.error('Invalid JSON in equipped_theme:', e);
+      }
+    } else {
+      equippedThemes = et;
+    }
   }
 
   const profileBgClass = equippedThemes.profile_bg || '';
