@@ -1,3 +1,4 @@
+Projekt grupowy na przedmiot Projekt grupowy
 <h1 align="center">FocusQuest </h1>
 <p align="center"><i>Transformuj naukę w grę</i></p>
 
