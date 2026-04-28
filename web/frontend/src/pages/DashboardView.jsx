@@ -146,7 +146,7 @@ export default function DashboardView({ session }) {
         </header>
 
         {activeTab === 'profile' && <ProfileTab profile={profile} />}
-        {activeTab === 'timer' && <TimerTab session={session} onSessionComplete={fetchProfileFromPython} timerTheme={equippedThemes.timer_color} />}
+        {activeTab === 'timer' && <TimerTab session={session} profile={profile} onSessionComplete={fetchProfileFromPython} timerTheme={equippedThemes.timer_color} />}
         {activeTab === 'inventory' && <InventoryTab session={session} profile={profile} onUpdateProfile={fetchProfileFromPython} />}
         {activeTab === 'garden' && <GardenTab session={session} profile={profile} onUpdateProfile={fetchProfileFromPython} />}
         {activeTab === 'shop' && <ShopTab session={session} profile={profile} onUpdateProfile={fetchProfileFromPython} />}

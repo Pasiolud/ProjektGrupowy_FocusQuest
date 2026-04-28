@@ -2,9 +2,17 @@ from fastapi import FastAPI, Depends, HTTPException, Header
 from fastapi.middleware.cors import CORSMiddleware
 from supabase import create_client, Client
 import os
+import json
+import random
+import math
+from datetime import datetime, timedelta
 from dotenv import load_dotenv
+from pydantic import BaseModel
 
-load_dotenv(dotenv_path="../../.env")
+# Obliczenie ścieżki do pliku .env niezależnie od katalogu odpalenia uvicorn (zawsze 3 foldery wyżej od main.py: web/backend/main.py -> /)
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+ENV_PATH = os.path.join(BASE_DIR, ".env")
+load_dotenv(dotenv_path=ENV_PATH)
 
 SUPABASE_URL = os.environ.get("VITE_SUPABASE_URL") or os.environ.get("SUPABASE_URL")
 SUPABASE_ANON_KEY = os.environ.get("VITE_SUPABASE_ANON_KEY") or os.environ.get("SUPABASE_ANON_KEY")
@@ -21,19 +29,24 @@ app.add_middleware(
 
 def get_supabase_client(authorization: str = Header(None)) -> dict:
     if not authorization:
+        print("-> ODRZUCONO: Brak nagłówka Authorization")
         raise HTTPException(status_code=401, detail="Brak nagłówka Authorization")
     
     token = authorization.replace("Bearer ", "") if "Bearer" in authorization else authorization
+    print(f"-> TRWA WERYFIKACJA TOKENA: {token[:10]}...") 
     
     try:
         supabase: Client = create_client(SUPABASE_URL, SUPABASE_ANON_KEY)
         user_response = supabase.auth.get_user(token)
         if not user_response.user:
+             print("-> ODRZUCONO: Supabase zwrócił brak uzytkownika (Zły/wygasły token)")
              raise HTTPException(status_code=401, detail="Nieprawidłowy lub zgasły token")
         
         supabase.postgrest.auth(token)
+        print(f"-> AUTORYZACJA SUKCES: Użytkownik {user_response.user.id}")
         return {"client": supabase, "user_id": user_response.user.id}
     except Exception as e:
+        print(f"-> BŁĄD KRYTYCZNY W GET_SUPABASE_CLIENT: {str(e)}")
         raise HTTPException(status_code=401, detail=f"Błąd logowania: {str(e)}")
 
 @app.get("/")
@@ -51,10 +64,6 @@ def get_my_profile(db_auth: dict = Depends(get_supabase_client)):
         "user_id": user_id, 
         "profile": profile.data[0] if profile.data else None
     }
-
-from pydantic import BaseModel
-import math
-import random
 
 class SessionCompleteRequest(BaseModel):
     duration_seconds: int
@@ -75,8 +84,6 @@ def complete_session(req: SessionCompleteRequest, db_auth: dict = Depends(get_su
     profile = profile_resp.data[0]
     
     # 1. Earned points
-    # 1 second = 1 XP
-    # 1 minute = 1 Coin
     earned_xp = req.duration_seconds
     earned_coins = int(req.duration_seconds / 60)
     
@@ -90,18 +97,17 @@ def complete_session(req: SessionCompleteRequest, db_auth: dict = Depends(get_su
     
     if last_session_date:
         if last_session_date != today_str:
-            # Different day. Check if streak continued (was it yesterday?)
             last_date_obj = datetime.strptime(last_session_date, "%Y-%m-%d").date()
             yesterday_obj = (now - timedelta(days=1)).date()
             
             if last_date_obj == yesterday_obj:
                 new_streak += 1
             elif last_date_obj < yesterday_obj:
-                new_streak = 1 # Streak broken, start fresh
+                new_streak = 1
             
-            new_daily_focus = 0 # It's a new day, reset daily counter
+            new_daily_focus = 0
     else:
-        new_streak = 1 # First session ever
+        new_streak = 1
         new_daily_focus = 0
             
     # 3. Apply increments
@@ -111,7 +117,7 @@ def complete_session(req: SessionCompleteRequest, db_auth: dict = Depends(get_su
     new_daily_focus += req.duration_seconds
     new_total_sessions = profile.get("total_sessions", 0) + 1
     
-    # 4. Level Calculation (XP_needed = 1000 * current_level^1.5)
+    # 4. Level Calculation
     def get_level(xp):
         lvl = 1
         needed = 1000 * (lvl**1.5)
@@ -124,14 +130,14 @@ def complete_session(req: SessionCompleteRequest, db_auth: dict = Depends(get_su
 
     new_level = get_level(new_total_xp)
     
-    # 5. Garden Progression (all active plants grow together)
+    # 5. Garden Progression
     garden_slots = profile.get("garden_slots", [])
-    if isinstance(garden_slots, str): garden_slots = json.loads(garden_slots) # safety
+    if isinstance(garden_slots, str): garden_slots = json.loads(garden_slots)
     
     for plant in garden_slots:
         plant["progress"] = plant.get("progress", 0) + req.duration_seconds
         
-    # 6. Seed Reward (logic: 1 random seed after complete session)
+    # 6. Seed Reward
     seed_pool = [
         {"type": "oak", "name": "Dąb Mądrości", "rarity": "common", "target": 7200, "value": 2000},
         {"type": "fire", "name": "Ognisty Kwiat", "rarity": "rare", "target": 14400, "value": 5000},
@@ -159,16 +165,16 @@ def complete_session(req: SessionCompleteRequest, db_auth: dict = Depends(get_su
     supabase.table("profiles").update(update_data).eq("id", user_id).execute()
     
     try:
-        # Also log the session itself 
         supabase.table("sessions").insert({"user_id": user_id, "duration_seconds": req.duration_seconds}).execute()
     except Exception as e:
         print("Session logging skip/error:", e)
-        pass # Optional phase
+        pass 
     
     return {
         "status": "success", 
         "earned": {"xp": earned_xp, "coins": earned_coins},
-        "new_level": new_level
+        "new_level": new_level,
+        "reward_seed": new_seed
     }
 
 
@@ -185,7 +191,6 @@ def open_box(req: ShopBuyRequest, db_auth: dict = Depends(get_supabase_client)):
     if profile.get("coins", 0) < req.cost:
          raise HTTPException(status_code=400, detail="Nie masz wystarczającej ilości monet!")
          
-    # Fetch all items from DB
     items_resp = supabase.table("items").select("*").execute()
     all_items = items_resp.data
     if not all_items:
@@ -193,17 +198,14 @@ def open_box(req: ShopBuyRequest, db_auth: dict = Depends(get_supabase_client)):
         
     drawn_item = random.choice(all_items)
     
-    # Check if user already owns it
     user_items_resp = supabase.table("user_items").select("*").eq("user_id", user_id).eq("item_id", drawn_item["id"]).execute()
     is_duplicate = len(user_items_resp.data) > 0
     
     new_coins = profile.get("coins", 0) - req.cost
     
     if is_duplicate:
-        # Refund 50%
         new_coins += int(req.cost / 2)
     else:
-        # Give item to user
         supabase.table("user_items").insert({"user_id": user_id, "item_id": drawn_item["id"]}).execute()
         
     supabase.table("profiles").update({"coins": new_coins}).eq("id", user_id).execute()
@@ -223,10 +225,10 @@ def open_box(req: ShopBuyRequest, db_auth: dict = Depends(get_supabase_client)):
 
 @app.get("/api/inventory")
 def get_inventory(db_auth: dict = Depends(get_supabase_client)):
+    print("TTOO")
     supabase = db_auth["client"]
     user_id = db_auth["user_id"]
-    
-    # Fetch user_items joined with items
+    print("EHEH")
     resp = supabase.table("user_items").select("*, items(*)").eq("user_id", user_id).execute()
     return {"status": "success", "inventory": [x["items"] for x in resp.data if x.get("items")]}
 
@@ -235,8 +237,6 @@ class EquipRequest(BaseModel):
     item_id: str
     category: str
     css_value: str
-
-import json
 
 @app.post("/api/inventory/equip")
 def equip_item(req: EquipRequest, db_auth: dict = Depends(get_supabase_client)):
@@ -252,14 +252,13 @@ def equip_item(req: EquipRequest, db_auth: dict = Depends(get_supabase_client)):
     equipped = {}
     raw_theme = profile.get("equipped_theme")
     if raw_theme:
-        try:
-            # Try to parse existing JSON
-            equipped = json.loads(raw_theme)
-            if not isinstance(equipped, dict):
+        if isinstance(raw_theme, str):
+            try:
+                equipped = json.loads(raw_theme)
+            except:
                 equipped = {}
-        except (json.JSONDecodeError, TypeError):
-            # If it's a plain string like "default", just start fresh
-            equipped = {}
+        elif isinstance(raw_theme, dict):
+            equipped = raw_theme
             
     equipped[req.category] = req.css_value
     
@@ -285,10 +284,13 @@ def unequip_item(req: UnequipRequest, db_auth: dict = Depends(get_supabase_clien
     
     equipped = {}
     if raw_theme:
-        try:
-            equipped = json.loads(raw_theme)
-        except:
-            equipped = {}
+        if isinstance(raw_theme, str):
+            try:
+                equipped = json.loads(raw_theme)
+            except:
+                equipped = {}
+        elif isinstance(raw_theme, dict):
+            equipped = raw_theme
             
     if req.category in equipped:
         del equipped[req.category]
@@ -315,8 +317,12 @@ def plant_seed(req: PlantRequest, db_auth: dict = Depends(get_supabase_client)):
     user_id = db_auth["user_id"]
     
     profile = supabase.table("profiles").select("garden_slots, seed_inventory").eq("id", user_id).execute().data[0]
-    garden = json.loads(profile["garden_slots"])
-    seeds = json.loads(profile["seed_inventory"])
+    
+    garden = profile.get("garden_slots", [])
+    if isinstance(garden, str): garden = json.loads(garden)
+    
+    seeds = profile.get("seed_inventory", [])
+    if isinstance(seeds, str): seeds = json.loads(seeds)
     
     if len(garden) >= 3:
         raise HTTPException(status_code=400, detail="Ogród jest pełen (max 3 rośliny)")
@@ -324,7 +330,6 @@ def plant_seed(req: PlantRequest, db_auth: dict = Depends(get_supabase_client)):
     if req.seed_index < 0 or req.seed_index >= len(seeds):
         raise HTTPException(status_code=400, detail="Nieprawidłowy indeks nasiona")
     
-    # Move from seeds to garden
     new_plant = seeds.pop(req.seed_index)
     new_plant["progress"] = 0
     new_plant["id"] = str(datetime.now().timestamp())
@@ -346,7 +351,9 @@ def sell_plant(req: SellRequest, db_auth: dict = Depends(get_supabase_client)):
     user_id = db_auth["user_id"]
     
     profile = supabase.table("profiles").select("garden_slots, coins").eq("id", user_id).execute().data[0]
-    garden = json.loads(profile["garden_slots"])
+    
+    garden = profile.get("garden_slots", [])
+    if isinstance(garden, str): garden = json.loads(garden)
     
     plant_to_sell = None
     for i, p in enumerate(garden):
