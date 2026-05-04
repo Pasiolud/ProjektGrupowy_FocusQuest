@@ -25,31 +25,28 @@ data class RegisterRequest(
     @SerializedName("data") val data: Map<String, String> = emptyMap()
 )
 
-// --- Backend Models ---
-data class SessionCompleteRequest(
-    @SerializedName("duration_seconds") val durationSeconds: Int
+data class PlantData(
+    @SerializedName("id") val id: String?,
+    @SerializedName("type") val type: String,
+    @SerializedName("name") val name: String,
+    @SerializedName("rarity") val rarity: String,
+    @SerializedName("progress") val progress: Int,
+    @SerializedName("target") val target: Int,
+    @SerializedName("value") val value: Int
 )
 
-data class SessionResponse(
-    @SerializedName("status") val status: String,
-    @SerializedName("earned") val earned: EarnedPoints,
-    @SerializedName("new_level") val newLevel: Int
+data class SeedData(
+    @SerializedName("type") val type: String,
+    @SerializedName("name") val name: String,
+    @SerializedName("rarity") val rarity: String,
+    @SerializedName("target") val target: Int,
+    @SerializedName("value") val value: Int
 )
 
-data class EarnedPoints(
-    @SerializedName("xp") val xp: Int,
-    @SerializedName("coins") val coins: Int
-)
-
-data class ProfileResponse(
-    @SerializedName("status") val status: String,
-    @SerializedName("profile") val profile: ProfileData
-)
-
-data class ProfileData(
-    @SerializedName("id") val id: String,
-    @SerializedName("total_xp") val totalXp: Int,
-    @SerializedName("coins") val coins: Int,
-    @SerializedName("level") val level: Int,
-    @SerializedName("current_streak") val currentStreak: Int
+data class ShopItem(
+    @SerializedName("name") val name: String,
+    @SerializedName("rarity") val rarity: String,
+    @SerializedName("type") val type: String,
+    @SerializedName("icon") val icon: String,
+    @SerializedName("is_duplicate") val isDuplicate: Boolean = false
 )

@@ -17,19 +17,11 @@ object RetrofitClient {
         .build()
 
     val authService: AuthService by lazy {
-        createService(Config.SUPABASE_URL, AuthService::class.java)
-    }
-
-    val backendService: BackendService by lazy {
-        createService(Config.BACKEND_URL, BackendService::class.java)
-    }
-
-    private fun <T> createService(baseUrl: String, serviceClass: Class<T>): T {
-        return Retrofit.Builder()
-            .baseUrl(baseUrl)
+        Retrofit.Builder()
+            .baseUrl(Config.SUPABASE_URL)
             .addConverterFactory(GsonConverterFactory.create())
             .client(client)
             .build()
-            .create(serviceClass)
+            .create(AuthService::class.java)
     }
 }

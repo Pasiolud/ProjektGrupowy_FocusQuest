@@ -43,7 +43,10 @@ export default function TimerTab({ session, profile, onSessionComplete, timerThe
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${session.access_token}`
         },
-        body: JSON.stringify({ duration_seconds: DEFAULT_TIME })
+        body: JSON.stringify({ 
+          duration_seconds: DEFAULT_TIME,
+          is_test_mode: isTestMode
+        })
       });
       
       if (!response.ok) throw new Error('Błąd wysyłania wyniku sesji');

@@ -67,6 +67,7 @@ def get_my_profile(db_auth: dict = Depends(get_supabase_client)):
 
 class SessionCompleteRequest(BaseModel):
     duration_seconds: int
+    is_test_mode: bool = False
 
 class ShopBuyRequest(BaseModel):
     box_type: str
@@ -87,6 +88,11 @@ def complete_session(req: SessionCompleteRequest, db_auth: dict = Depends(get_su
     earned_xp = req.duration_seconds
     earned_coins = int(req.duration_seconds / 60)
     
+    # DEV MODE REWARDS
+    if req.is_test_mode:
+        earned_xp = 1500 # Give 25 min worth of XP in 1 min
+        earned_coins = 25 # Give 25 min worth of coins in 1 min
+    
     # 2. Daily reset and streak logic
     now = datetime.now()
     today_str = now.date().isoformat()
@@ -95,26 +101,29 @@ def complete_session(req: SessionCompleteRequest, db_auth: dict = Depends(get_su
     new_daily_focus = profile.get("daily_focus_seconds", 0)
     new_streak = profile.get("current_streak", 0)
     
-    if last_session_date:
-        if last_session_date != today_str:
-            last_date_obj = datetime.strptime(last_session_date, "%Y-%m-%d").date()
-            yesterday_obj = (now - timedelta(days=1)).date()
-            
-            if last_date_obj == yesterday_obj:
-                new_streak += 1
-            elif last_date_obj < yesterday_obj:
-                new_streak = 1
-            
-            new_daily_focus = 0
+    if req.is_test_mode:
+        new_streak += 1 # Auto increment streak for presentation
     else:
-        new_streak = 1
-        new_daily_focus = 0
+        if last_session_date:
+            if last_session_date != today_str:
+                last_date_obj = datetime.strptime(last_session_date, "%Y-%m-%d").date()
+                yesterday_obj = (now - timedelta(days=1)).date()
+                
+                if last_date_obj == yesterday_obj:
+                    new_streak += 1
+                elif last_date_obj < yesterday_obj:
+                    new_streak = 1
+                
+                new_daily_focus = 0
+        else:
+            new_streak = 1
+            new_daily_focus = 0
             
     # 3. Apply increments
     new_total_xp = profile.get("total_xp", 0) + earned_xp
     new_coins = profile.get("coins", 0) + earned_coins
-    new_weekly_focus = profile.get("weekly_focus_seconds", 0) + req.duration_seconds
-    new_daily_focus += req.duration_seconds
+    new_weekly_focus = profile.get("weekly_focus_seconds", 0) + (1500 if req.is_test_mode else req.duration_seconds)
+    new_daily_focus += (1500 if req.is_test_mode else req.duration_seconds)
     new_total_sessions = profile.get("total_sessions", 0) + 1
     
     # 4. Level Calculation
@@ -134,8 +143,11 @@ def complete_session(req: SessionCompleteRequest, db_auth: dict = Depends(get_su
     garden_slots = profile.get("garden_slots", [])
     if isinstance(garden_slots, str): garden_slots = json.loads(garden_slots)
     
+    # DEV MODE: Grow plants instantly
+    progress_to_add = 30000 if req.is_test_mode else req.duration_seconds
+    
     for plant in garden_slots:
-        plant["progress"] = plant.get("progress", 0) + req.duration_seconds
+        plant["progress"] = plant.get("progress", 0) + progress_to_add
         
     # 6. Seed Reward
     seed_pool = [
