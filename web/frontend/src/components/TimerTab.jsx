@@ -1,40 +1,107 @@
 import React, { useState, useEffect } from 'react';
+import { supabase } from '../supabase';
 
 export default function TimerTab({ session, profile, onSessionComplete, timerTheme }) {
   const [isTestMode, setIsTestMode] = useState(false);
-  const DEFAULT_TIME = isTestMode ? 60 : 25 * 60; // 1 min (Test) or 25 min (Prod)
+  const DEFAULT_TIME = isTestMode ? 60 : 25 * 60;
   const [timeLeft, setTimeLeft] = useState(DEFAULT_TIME);
   const [isActive, setIsActive] = useState(false);
   const [isFinishing, setIsFinishing] = useState(false);
   const [errorStatus, setErrorStatus] = useState('');
   const [sessionResult, setSessionResult] = useState(null);
 
-  // Update time left immediately when test mode is toggled if not active
+  // Check for active session in DB on mount or profile change
   useEffect(() => {
-    if (!isActive) {
+    if (profile?.active_session_start && profile?.active_session_duration) {
+      const start = new Date(profile.active_session_start).getTime();
+      const now = new Date().getTime();
+      const secondsPassed = Math.floor((now - start) / 1000);
+      const remaining = profile.active_session_duration - secondsPassed;
+
+      if (remaining > 0) {
+        setTimeLeft(remaining);
+        setIsActive(true);
+      } else {
+        // Session should have ended, clear it in DB
+        clearActiveSessionInDb();
+      }
+    }
+  }, [profile]);
+
+  useEffect(() => {
+    if (!isActive && !profile?.active_session_start) {
       setTimeLeft(DEFAULT_TIME);
     }
-  }, [isTestMode, isActive, DEFAULT_TIME]);
+  }, [isTestMode, isActive, DEFAULT_TIME, profile]);
 
   useEffect(() => {
     let interval = null;
-    
     if (isActive && timeLeft > 0) {
       interval = setInterval(() => {
         setTimeLeft((time) => time - 1);
       }, 1000);
-    } else if (isActive && timeLeft === 0 && !isFinishing) {
+    } else if (isActive && timeLeft <= 0 && !isFinishing) {
       clearInterval(interval);
       handleSessionComplete();
     }
-    
     return () => clearInterval(interval);
   }, [isActive, timeLeft, isFinishing]);
+
+  const startActiveSessionInDb = async (duration) => {
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          active_session_start: new Date().toISOString(),
+          active_session_duration: duration
+        })
+        .eq('id', session.user.id);
+      
+      if (error) throw error;
+      return true;
+    } catch (err) {
+      setErrorStatus('Nie udało się zapisać sesji w chmurze.');
+      return false;
+    }
+  };
+
+  const clearActiveSessionInDb = async () => {
+    try {
+      await supabase
+        .from('profiles')
+        .update({
+          active_session_start: null,
+          active_session_duration: null
+        })
+        .eq('id', session.user.id);
+    } catch (err) {
+      console.error('Error clearing session:', err);
+    }
+  };
+
+  const toggleActive = async () => {
+    if (!isActive) {
+      // Starting
+      if (profile?.active_session_start) {
+        setErrorStatus('Sesja trwa już na innym urządzeniu!');
+        return;
+      }
+      const ok = await startActiveSessionInDb(DEFAULT_TIME);
+      if (ok) setIsActive(true);
+    } else {
+      // Pausing (in this simple version, pause = stop/clear)
+      setIsActive(false);
+      clearActiveSessionInDb();
+      setTimeLeft(DEFAULT_TIME);
+    }
+  };
 
   const handleSessionComplete = async () => {
     setIsFinishing(true);
     setIsActive(false);
     
+    await clearActiveSessionInDb();
+
     const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
     try {
       const response = await fetch(`${backendUrl}/api/session/complete`, {
@@ -58,57 +125,28 @@ export default function TimerTab({ session, profile, onSessionComplete, timerThe
       setErrorStatus(err.message);
     } finally {
       setIsFinishing(false);
-      setTimeLeft(DEFAULT_TIME);
     }
   };
 
   const closeResult = () => {
     setSessionResult(null);
+    setTimeLeft(DEFAULT_TIME);
   };
 
   const minutes = String(Math.floor(timeLeft / 60)).padStart(2, '0');
   const seconds = String(timeLeft % 60).padStart(2, '0');
-  
   const progressPercent = ((DEFAULT_TIME - timeLeft) / DEFAULT_TIME) * 100;
   const circleClass = timerTheme || '';
-
   const isLevelUp = sessionResult && profile && sessionResult.new_level > profile.level;
 
   return (
     <div className="page-container" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', position: 'relative' }}>
       
-      {/* Circle Animation Container */}
       <div style={{ position: 'relative', width: '300px', height: '300px', marginBottom: '48px' }}>
         <svg viewBox="0 0 100 100" style={{ transform: 'rotate(-90deg)', width: '100%', height: '100%', overflow: 'visible' }}>
-          <circle 
-            cx="50" cy="50" r="45" 
-            fill="none" 
-            stroke="var(--surface-container-high)" 
-            strokeWidth="3" 
-            opacity="0.5"
-          />
-          <circle 
-            className={circleClass}
-            cx="50" cy="50" r="45" 
-            fill="none" 
-            stroke="url(#progress-gradient)"
-            strokeWidth="8" 
-            strokeDasharray="283" 
-            strokeDashoffset={283 - (283 * progressPercent) / 100}
-            strokeLinecap="round"
-            style={{ transition: 'stroke-dashoffset 1s linear', opacity: 0.2, filter: 'blur(8px)' }}
-          />
-          <circle 
-            className={circleClass}
-            cx="50" cy="50" r="45" 
-            fill="none" 
-            stroke="url(#progress-gradient)"
-            strokeWidth="4" 
-            strokeDasharray="283" 
-            strokeDashoffset={283 - (283 * progressPercent) / 100}
-            strokeLinecap="round"
-            style={{ transition: 'stroke-dashoffset 1s linear' }}
-          />
+          <circle cx="50" cy="50" r="45" fill="none" stroke="var(--surface-container-high)" strokeWidth="3" opacity="0.5" />
+          <circle className={circleClass} cx="50" cy="50" r="45" fill="none" stroke="url(#progress-gradient)" strokeWidth="8" strokeDasharray="283" strokeDashoffset={283 - (283 * progressPercent) / 100} strokeLinecap="round" style={{ transition: 'stroke-dashoffset 1s linear', opacity: 0.2, filter: 'blur(8px)' }} />
+          <circle className={circleClass} cx="50" cy="50" r="45" fill="none" stroke="url(#progress-gradient)" strokeWidth="4" strokeDasharray="283" strokeDashoffset={283 - (283 * progressPercent) / 100} strokeLinecap="round" style={{ transition: 'stroke-dashoffset 1s linear' }} />
           <defs>
             <linearGradient id="progress-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
               <stop offset="0%" stopColor="var(--primary)" />
@@ -118,18 +156,7 @@ export default function TimerTab({ session, profile, onSessionComplete, timerThe
         </svg>
 
         <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{ 
-            width: '180px', 
-            height: '180px', 
-            borderRadius: '999px', 
-            backgroundColor: 'rgba(255,255,255,0.05)', 
-            backdropFilter: 'blur(10px)',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            border: '1px solid rgba(255,255,255,0.1)'
-          }}>
+          <div style={{ width: '180px', height: '180px', borderRadius: '999px', backgroundColor: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(10px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(255,255,255,0.1)' }}>
             <span className="material-symbols-outlined" style={{ fontSize: '32px', color: 'var(--primary)', marginBottom: '4px', opacity: 0.8 }}>
               {isActive ? 'auto_awesome' : 'hourglass_empty'}
             </span>
@@ -146,37 +173,26 @@ export default function TimerTab({ session, profile, onSessionComplete, timerThe
           <button 
             className="btn-primary" 
             style={{ width: '160px', padding: '16px 0', fontSize: '1.25rem' }}
-            onClick={() => setIsActive(!isActive)}
+            onClick={toggleActive}
             disabled={isFinishing}
           >
-            {isActive ? 'Pauza' : (timeLeft < DEFAULT_TIME ? 'Wznów' : 'Skup się')}
+            {isActive ? 'Stop' : 'Skup się'}
           </button>
-          {(!isActive && timeLeft < DEFAULT_TIME) && (
-            <button className="btn-secondary" onClick={() => { setIsActive(false); setTimeLeft(DEFAULT_TIME); }}>Anuluj</button>
-          )}
         </div>
         
-        {/* Developer Test Switch */}
         {!isActive && timeLeft === DEFAULT_TIME && (
-          <button 
-            className="btn-text" 
-            onClick={() => setIsTestMode(!isTestMode)}
-            style={{ marginTop: '8px', opacity: 0.6, fontSize: '0.8rem' }}
-          >
+          <button className="btn-text" onClick={() => setIsTestMode(!isTestMode)} style={{ marginTop: '8px', opacity: 0.6, fontSize: '0.8rem' }}>
             [{isTestMode ? 'Test Mode: 1 MIN' : 'Real Mode: 25 MIN'}] Kliknij by zmienić
           </button>
         )}
       </div>
 
-      {/* REWARD MODAL */}
       {sessionResult && (
         <div className="reward-overlay">
           <div className="reward-modal">
             {isLevelUp && <div className="level-up-banner">POZIOM WYŻEJ!</div>}
-            
             <h2 style={{ fontSize: '2rem', marginBottom: '8px' }}>Sesja Ukończona!</h2>
             <p className="body-secondary" style={{ marginBottom: '32px' }}>Świetna robota, wojowniku. Oto Twoje łupy:</p>
-            
             <div style={{ display: 'flex', justifyContent: 'center', gap: '24px', marginBottom: '40px' }}>
                <div className="reward-item">
                   <span className="material-symbols-outlined xp-icon">military_tech</span>
@@ -187,7 +203,6 @@ export default function TimerTab({ session, profile, onSessionComplete, timerThe
                   <p className="reward-value">+{sessionResult.earned.coins}</p>
                </div>
             </div>
-
             {sessionResult.reward_seed && (
               <div className="seed-reward">
                 <p className="label-text" style={{ color: 'var(--primary)', marginBottom: '12px' }}>ZDOBYTO NASIONO</p>
@@ -198,48 +213,17 @@ export default function TimerTab({ session, profile, onSessionComplete, timerThe
                 </div>
               </div>
             )}
-
             <button className="btn-primary" style={{ width: '100%', marginTop: '32px' }} onClick={closeResult}>Odbierz Nagrody</button>
           </div>
-
           <style>{`
-            .reward-overlay {
-              position: fixed;
-              top: 0; left: 0; width: 100vw; height: 100vh;
-              background: rgba(0,0,0,0.85);
-              backdrop-filter: blur(8px);
-              z-index: 1000;
-              display: flex; align-items: center; justify-content: center;
-              animation: fadeIn 0.3s ease-out;
-            }
-            .reward-modal {
-              background: var(--surface-container-high);
-              padding: 48px;
-              border-radius: 32px;
-              width: 90%; max-width: 480px;
-              text-align: center;
-              box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-              position: relative;
-              animation: slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            }
-            .level-up-banner {
-              position: absolute;
-              top: -20px; left: 50%;
-              transform: translateX(-50%);
-              background: var(--primary-gradient);
-              padding: 8px 24px;
-              border-radius: 99px;
-              font-weight: 900;
-              color: white;
-              box-shadow: 0 10px 20px var(--primary-container);
-              animation: scaleIn 0.5s 0.2s both, pulse 2s infinite;
-            }
+            .reward-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); z-index: 1000; display: flex; align-items: center; justify-content: center; animation: fadeIn 0.3s ease-out; }
+            .reward-modal { background: var(--surface-container-high); padding: 48px; border-radius: 32px; width: 90%; max-width: 480px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.5); position: relative; animation: slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+            .level-up-banner { position: absolute; top: -20px; left: 50%; transform: translateX(-50%); background: var(--primary-gradient); padding: 8px 24px; border-radius: 99px; font-weight: 900; color: white; box-shadow: 0 10px 20px var(--primary-container); animation: scaleIn 0.5s 0.2s both, pulse 2s infinite; }
             .reward-item { animation: fadeIn 0.5s 0.3s both; }
             .xp-icon { font-size: 40px; color: #3b82f6; display: block; filter: drop-shadow(0 0 10px #3b82f6); }
             .coin-icon { font-size: 40px; color: #f59e0b; display: block; filter: drop-shadow(0 0 10px #f59e0b); }
             .reward-value { font-weight: 800; font-size: 1.25rem; margin-top: 8px; }
             .seed-reward { animation: fadeIn 0.5s 0.6s both; }
-            
             @keyframes slideUp { from { transform: translateY(50px) scale(0.9); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
             @keyframes scaleIn { from { transform: translateX(-50%) scale(0); } to { transform: translateX(-50%) scale(1); } }
             @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(var(--primary-rgb), 0.4); } 70% { box-shadow: 0 0 0 15px rgba(var(--primary-rgb), 0); } 100% { box-shadow: 0 0 0 0 rgba(var(--primary-rgb), 0); } }

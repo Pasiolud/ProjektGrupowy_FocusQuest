@@ -26,7 +26,9 @@ data class ProfileRow(
     @SerializedName("total_sessions") val totalSessions: Int = 0,
     @SerializedName("last_session_date") val lastSessionDate: String? = null,
     @SerializedName("garden_slots") val gardenSlotsRaw: Any? = null,
-    @SerializedName("seed_inventory") val seedInventoryRaw: Any? = null
+    @SerializedName("seed_inventory") val seedInventoryRaw: Any? = null,
+    @SerializedName("active_session_start") val activeSessionStart: String? = null,
+    @SerializedName("active_session_duration") val activeSessionDuration: Int? = null
 )
 
 data class ItemRow(
@@ -461,6 +463,25 @@ object SupabaseRepository {
             "theme-timer-legendary-pulse" -> 0xFFFFBD00.toInt()
             else -> null
         }
+    }
+
+    fun startActiveSession(token: String, userId: String, durationSeconds: Int): RepoResult<Unit> {
+        val url = "${Config.SUPABASE_URL}/rest/v1/profiles?id=eq.$userId"
+        val nowIso = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX", java.util.Locale.US).format(java.util.Date())
+        val payload = mapOf(
+            "active_session_start" to nowIso,
+            "active_session_duration" to durationSeconds
+        )
+        return patch(url, token, payload)
+    }
+
+    fun clearActiveSession(token: String, userId: String): RepoResult<Unit> {
+        val url = "${Config.SUPABASE_URL}/rest/v1/profiles?id=eq.$userId"
+        val payload = mapOf(
+            "active_session_start" to null,
+            "active_session_duration" to null
+        )
+        return patch(url, token, payload)
     }
 
     private fun calcLevel(xp: Int): Int {

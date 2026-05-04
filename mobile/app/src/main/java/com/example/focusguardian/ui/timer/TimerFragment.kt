@@ -15,6 +15,8 @@ import com.example.focusguardian.api.SupabaseRepository
 import com.example.focusguardian.auth.AuthManager
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.progressindicator.CircularProgressIndicator
+import java.time.OffsetDateTime
+import java.time.temporal.ChronoUnit
 import java.util.concurrent.Executors
 
 class TimerFragment : Fragment() {
@@ -69,13 +71,48 @@ class TimerFragment : Fragment() {
         }
 
         startButton.setOnClickListener {
-            if (isTimerRunning) stopTimer() else startTimer()
+            if (isTimerRunning) stopTimer() else attemptStartTimer()
         }
 
+        checkActiveSession()
         loadEquippedTheme()
         updateCountDownText()
         updateRewardPreview()
         return root
+    }
+
+    private fun checkActiveSession() {
+        val token = authManager.getAuthToken() ?: return
+        val userId = authManager.getUserId() ?: return
+
+        executor.execute {
+            val profileResult = SupabaseRepository.getProfile(token, userId)
+            activity?.runOnUiThread {
+                if (profileResult is RepoResult.Success) {
+                    val p = profileResult.data
+                    if (p.activeSessionStart != null && p.activeSessionDuration != null) {
+                        try {
+                            val sdf = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", java.util.Locale.US)
+                            val startDate = sdf.parse(p.activeSessionStart)
+                            val now = java.util.Date()
+                            
+                            val secondsPassed = (now.time - startDate.time) / 1000
+                            val secondsRemaining = p.activeSessionDuration - secondsPassed
+
+                            if (secondsRemaining > 0) {
+                                timeLeftInMillis = secondsRemaining * 1000
+                                totalMillis = p.activeSessionDuration.toLong() * 1000
+                                startTimerLocally(p.activeSessionDuration)
+                            } else {
+                                SupabaseRepository.clearActiveSession(token, userId)
+                            }
+                        } catch (e: Exception) {
+                            executor.execute { SupabaseRepository.clearActiveSession(token, userId) }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     private fun loadEquippedTheme() {
@@ -101,10 +138,40 @@ class TimerFragment : Fragment() {
         }
     }
 
-    private fun startTimer() {
+    private fun attemptStartTimer() {
+        val token = authManager.getAuthToken() ?: return
+        val userId = authManager.getUserId() ?: return
         val durationSeconds = if (isTestMode) TEST_SECONDS else PROD_SECONDS
-        totalMillis = timeLeftInMillis
 
+        startButton.isEnabled = false
+        executor.execute {
+            val profileResult = SupabaseRepository.getProfile(token, userId)
+            if (profileResult is RepoResult.Success) {
+                val p = profileResult.data
+                if (p.activeSessionStart != null) {
+                    activity?.runOnUiThread {
+                        startButton.isEnabled = true
+                        Toast.makeText(context, "Sesja już trwa na innym urządzeniu!", Toast.LENGTH_LONG).show()
+                    }
+                    return@execute
+                }
+            }
+
+            val startResult = SupabaseRepository.startActiveSession(token, userId, durationSeconds)
+            activity?.runOnUiThread {
+                startButton.isEnabled = true
+                if (startResult is RepoResult.Success) {
+                    totalMillis = timeLeftInMillis
+                    startTimerLocally(durationSeconds)
+                } else {
+                    Toast.makeText(context, "Błąd startu sesji", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+
+    private fun startTimerLocally(durationSeconds: Int) {
+        timer?.cancel()
         timer = object : CountDownTimer(timeLeftInMillis, 1000) {
             override fun onTick(millisUntilFinished: Long) {
                 timeLeftInMillis = millisUntilFinished
@@ -121,6 +188,11 @@ class TimerFragment : Fragment() {
                 totalMillis = timeLeftInMillis
                 timerProgress.progress = 100
                 updateCountDownText()
+                
+                val token = authManager.getAuthToken() ?: return
+                val userId = authManager.getUserId() ?: return
+                executor.execute { SupabaseRepository.clearActiveSession(token, userId) }
+                
                 sendSessionCompleted(durationSeconds)
             }
         }.start()
@@ -139,6 +211,11 @@ class TimerFragment : Fragment() {
         totalMillis = timeLeftInMillis
         timerProgress.progress = 100
         updateCountDownText()
+        
+        val token = authManager.getAuthToken() ?: return
+        val userId = authManager.getUserId() ?: return
+        executor.execute { SupabaseRepository.clearActiveSession(token, userId) }
+        
         Toast.makeText(context, "Sesja przerwana", Toast.LENGTH_SHORT).show()
     }
 
