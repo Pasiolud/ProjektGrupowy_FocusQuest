@@ -64,7 +64,3 @@ graph TD
 | **M6: Launch**        | Optymalizacja i premiera Early Access. |
 
 ---
-
-<p align="center">
-  <i>"Skupienie to Twoja największa broń. Rozwijaj ją z FocusQuest."</i>
-</p>
