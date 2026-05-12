@@ -24,6 +24,7 @@ data class ProfileRow(
     @SerializedName("weekly_focus_seconds") val weeklyFocusSeconds: Int = 0,
     @SerializedName("daily_focus_seconds") val dailyFocusSeconds: Int = 0,
     @SerializedName("total_sessions") val totalSessions: Int = 0,
+    @SerializedName("email") val email: String? = null,
     @SerializedName("last_session_date") val lastSessionDate: String? = null,
     @SerializedName("garden_slots") val gardenSlotsRaw: Any? = null,
     @SerializedName("seed_inventory") val seedInventoryRaw: Any? = null,
@@ -230,6 +231,12 @@ object SupabaseRepository {
         } catch (_: Exception) {}
 
         return RepoResult.Success(SessionResult(earnedXp, earnedCoins, newLevel, newSeed))
+    }
+
+    fun getLeaderboard(token: String, orderByField: String): RepoResult<List<ProfileRow>> {
+        val url = "${Config.SUPABASE_URL}/rest/v1/profiles?select=id,email,level,total_sessions,coins,current_streak&order=$orderByField.desc&limit=50"
+        val listType = object : TypeToken<List<ProfileRow>>() {}.type
+        return get<List<ProfileRow>>(url, token, listType)
     }
 
     data class OpenBoxResult(val item: ShopItem, val isDuplicate: Boolean, val newCoins: Int)
