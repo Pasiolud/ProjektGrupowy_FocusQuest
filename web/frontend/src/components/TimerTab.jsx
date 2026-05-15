@@ -25,8 +25,12 @@ export default function TimerTab({ session, profile, onSessionComplete, timerThe
         // Session should have ended, clear it in DB
         clearActiveSessionInDb();
       }
+    } else if (profile && !profile.active_session_start) {
+      // Sesja została zatrzymana z innego urządzenia (np. telefon)
+      setIsActive(false);
+      setTimeLeft(DEFAULT_TIME);
     }
-  }, [profile]);
+  }, [profile, DEFAULT_TIME]);
 
   useEffect(() => {
     if (!isActive && !profile?.active_session_start) {

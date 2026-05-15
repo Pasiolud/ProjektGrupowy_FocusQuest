@@ -64,7 +64,12 @@ export default function GardenTab({ session, profile, onUpdateProfile }) {
     if (progress >= 100) stage = 3;
     else if (progress >= 33) stage = 2;
     
-    return `/assets/garden/${plant.type}_${stage}.png`;
+    let typeName = 'dab_madrosci';
+    if (plant.type === 'fire') typeName = 'ognisty_kwiat';
+    if (plant.type === 'star') typeName = 'gwiezdne_pnacza';
+    if (plant.type === 'oak') typeName = 'dab_madrosci';
+    
+    return `/assets/garden/${typeName}_faza${stage}.png`;
   };
 
   return (

@@ -234,7 +234,7 @@ object SupabaseRepository {
     }
 
     fun getLeaderboard(token: String, orderByField: String): RepoResult<List<ProfileRow>> {
-        val url = "${Config.SUPABASE_URL}/rest/v1/profiles?select=id,email,level,total_sessions,coins,current_streak&order=$orderByField.desc&limit=50"
+        val url = "${Config.SUPABASE_URL}/rest/v1/profiles?select=id,level,total_sessions,coins,current_streak&order=$orderByField.desc&limit=50"
         val listType = object : TypeToken<List<ProfileRow>>() {}.type
         return get<List<ProfileRow>>(url, token, listType)
     }

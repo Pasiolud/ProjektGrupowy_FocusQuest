@@ -1,13 +1,14 @@
-from fastapi import FastAPI, Depends, HTTPException, Header
-from fastapi.middleware.cors import CORSMiddleware
-from supabase import create_client, Client
 import os
 import json
 import random
 import math
+import urllib.request
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
 from pydantic import BaseModel
+from supabase import create_client, Client
+from fastapi import FastAPI, Depends, HTTPException, Header
+from fastapi.middleware.cors import CORSMiddleware
 
 # Obliczenie ścieżki do pliku .env niezależnie od katalogu odpalenia uvicorn (zawsze 3 foldery wyżej od main.py: web/backend/main.py -> /)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -27,27 +28,43 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# TWORZYMY KLIENTA GLOBALNIE RAZ, ABY UNIKNĄĆ ZAWIESZANIA SIĘ W WĄTKACH
+global_supabase = create_client(SUPABASE_URL, SUPABASE_ANON_KEY)
+
+def _verify_token_direct(token: str):
+    req = urllib.request.Request(
+        f"{SUPABASE_URL}/auth/v1/user",
+        headers={
+            "Authorization": f"Bearer {token}",
+            "apikey": SUPABASE_ANON_KEY,
+        },
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=8) as resp:
+            return json.loads(resp.read().decode())
+    except Exception:
+        return None
+
 def get_supabase_client(authorization: str = Header(None)) -> dict:
     if not authorization:
-        print("-> ODRZUCONO: Brak nagłówka Authorization")
         raise HTTPException(status_code=401, detail="Brak nagłówka Authorization")
     
     token = authorization.replace("Bearer ", "") if "Bearer" in authorization else authorization
-    print(f"-> TRWA WERYFIKACJA TOKENA: {token[:10]}...") 
-    
+
+    user_data = _verify_token_direct(token)
+    if not user_data or "id" not in user_data:
+        raise HTTPException(status_code=401, detail="Nieprawidłowy lub wygasły token")
+
+    user_id = user_data["id"]
+
     try:
-        supabase: Client = create_client(SUPABASE_URL, SUPABASE_ANON_KEY)
-        user_response = supabase.auth.get_user(token)
-        if not user_response.user:
-             print("-> ODRZUCONO: Supabase zwrócił brak uzytkownika (Zły/wygasły token)")
-             raise HTTPException(status_code=401, detail="Nieprawidłowy lub zgasły token")
-        
-        supabase.postgrest.auth(token)
-        print(f"-> AUTORYZACJA SUKCES: Użytkownik {user_response.user.id}")
-        return {"client": supabase, "user_id": user_response.user.id}
+        # Aktualizujemy token na globalnym kliencie
+        global_supabase.postgrest.auth(token)
     except Exception as e:
-        print(f"-> BŁĄD KRYTYCZNY W GET_SUPABASE_CLIENT: {str(e)}")
-        raise HTTPException(status_code=401, detail=f"Błąd logowania: {str(e)}")
+        print(f"-> BŁĄD ustawiania tokena Supabase: {e}")
+        raise HTTPException(status_code=500, detail="Błąd wewnętrzny serwera")
+
+    return {"client": global_supabase, "user_id": user_id}
 
 @app.get("/")
 def read_root():
@@ -55,9 +72,12 @@ def read_root():
 
 @app.get("/api/me")
 def get_my_profile(db_auth: dict = Depends(get_supabase_client)):
+    print("-> [get_my_profile] Poczatek")
     supabase = db_auth["client"]
     user_id = db_auth["user_id"]
+    print("-> [get_my_profile] Zapytanie do bazy...")
     profile = supabase.table("profiles").select("*").eq("id", user_id).execute()
+    print("-> [get_my_profile] Wynik otrzymany!")
     
     return {
         "status": "success",
@@ -155,7 +175,7 @@ def complete_session(req: SessionCompleteRequest, db_auth: dict = Depends(get_su
         {"type": "fire", "name": "Ognisty Kwiat", "rarity": "rare", "target": 14400, "value": 5000},
         {"type": "star", "name": "Gwiezdne Pnącze", "rarity": "legendary", "target": 28800, "value": 12000}
     ]
-    new_seed = random.choices(seed_pool, weights=[70, 25, 5], k=1)[0]
+    new_seed = random.choices(seed_pool, weights=[34, 33, 33], k=1)[0]
     
     seed_inventory = profile.get("seed_inventory", [])
     if isinstance(seed_inventory, str): seed_inventory = json.loads(seed_inventory)

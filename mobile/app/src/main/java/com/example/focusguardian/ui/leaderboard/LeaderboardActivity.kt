@@ -80,7 +80,7 @@ class LeaderboardActivity : AppCompatActivity() {
 
                             rankText.text = "#${index + 1}"
                             
-                            val name = if (!profile.email.isNullOrBlank()) profile.email else profile.id.take(8) + "..."
+                            val name = profile.id.take(8) + "..."
                             nameText.text = name
 
                             val scoreStr = when (orderBy) {

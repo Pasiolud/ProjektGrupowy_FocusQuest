@@ -1,4 +1,5 @@
 import React from 'react';
+import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 
 export default function ProfileTab({ profile }) {
   return (
@@ -11,7 +12,25 @@ export default function ProfileTab({ profile }) {
         </p>
       </section>
 
-      <div className="bento-grid">
+      {(() => {
+        const radarData = [
+          { subject: 'Persistence', A: Math.min(100, (profile?.current_streak || 0) * 10 || 10), fullMark: 100 },
+          { subject: 'Focus', A: Math.min(100, (profile?.daily_focus_seconds || 0) / 60 || 10), fullMark: 100 },
+          { subject: 'Diligence', A: Math.min(100, (profile?.total_sessions || 0) * 2 || 10), fullMark: 100 },
+          { subject: 'Experience', A: Math.min(100, (profile?.level || 1) * 5 || 10), fullMark: 100 },
+          { subject: 'Consistency', A: Math.min(100, (profile?.weekly_focus_seconds || 0) / 3600 * 10 || 10), fullMark: 100 },
+        ];
+
+        const barData = [
+          {
+            name: 'Activity (Minuty)',
+            Dzisiaj: Math.floor((profile?.daily_focus_seconds || 0) / 60),
+            'Średnia 7d': Math.floor((profile?.weekly_focus_seconds || 0) / 60 / 7),
+          }
+        ];
+
+        return (
+          <div className="bento-grid">
         <div className="card" style={{ gridColumn: 'span 8', backgroundColor: 'var(--surface-container-low)' }}>
           {(() => {
              const lvl = profile?.level || 1;
@@ -72,7 +91,42 @@ export default function ProfileTab({ profile }) {
           <p style={{ fontSize: '2rem', fontWeight: 900 }}>{profile?.total_sessions || 0}</p>
           <p className="label-text">Deep Sessions</p>
         </div>
+
+        {/* Charts */}
+        <div className="card" style={{ gridColumn: 'span 6', minHeight: '300px', display: 'flex', flexDirection: 'column' }}>
+          <h3 className="label-text" style={{ marginBottom: '16px' }}>Skill Radar</h3>
+          <div style={{ flex: 1, width: '100%' }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <RadarChart cx="50%" cy="50%" outerRadius="80%" data={radarData}>
+                <PolarGrid stroke="var(--outline-variant)" />
+                <PolarAngleAxis dataKey="subject" tick={{ fill: 'var(--on-surface-variant)', fontSize: 12 }} />
+                <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
+                <Radar name="Skille" dataKey="A" stroke="var(--primary)" fill="var(--primary)" fillOpacity={0.4} />
+              </RadarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        <div className="card" style={{ gridColumn: 'span 6', minHeight: '300px', display: 'flex', flexDirection: 'column' }}>
+          <h3 className="label-text" style={{ marginBottom: '16px' }}>Focus Activity (Minutes)</h3>
+          <div style={{ flex: 1, width: '100%' }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={barData} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
+                <XAxis dataKey="name" stroke="var(--on-surface-variant)" />
+                <YAxis stroke="var(--on-surface-variant)" />
+                <Tooltip 
+                  cursor={{fill: 'var(--surface-container-high)'}}
+                  contentStyle={{ backgroundColor: 'var(--surface-container)', borderRadius: '12px', border: 'none', color: 'var(--on-surface)' }} 
+                />
+                <Bar dataKey="Dzisiaj" fill="var(--primary)" radius={[6, 6, 0, 0]} barSize={40} />
+                <Bar dataKey="Średnia 7d" fill="var(--gold)" radius={[6, 6, 0, 0]} barSize={40} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
       </div>
+        );
+      })()}
     </div>
   );
 }

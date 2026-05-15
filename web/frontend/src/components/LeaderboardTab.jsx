@@ -18,7 +18,7 @@ export default function LeaderboardTab({ session }) {
 
         const { data, error } = await supabase
           .from('profiles')
-          .select('id, email, level, total_sessions, coins, current_streak')
+          .select('id, level, total_sessions, coins, current_streak')
           .order(orderByField, { ascending: false })
           .limit(50);
 
@@ -90,7 +90,7 @@ export default function LeaderboardTab({ session }) {
           {/* Header */}
           <div style={{ display: 'grid', gridTemplateColumns: '60px 1fr 120px', padding: '16px 24px', backgroundColor: 'var(--surface-container-high)', borderBottom: '1px solid var(--outline-variant)' }}>
             <span className="label-text">Miejsce</span>
-            <span className="label-text">Bohater (Email / ID)</span>
+            <span className="label-text">Bohater</span>
             <span className="label-text" style={{ textAlign: 'right' }}>Wynik</span>
           </div>
           
@@ -121,7 +121,7 @@ export default function LeaderboardTab({ session }) {
                     <div style={{ width: '32px', height: '32px', borderRadius: '99px', backgroundColor: 'var(--surface-container)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       <span className="material-symbols-outlined" style={{ fontSize: '16px', color: 'var(--primary)' }}>account_circle</span>
                     </div>
-                    <span>{user.email || (user.id.substring(0, 8) + '...')}</span>
+                    <span>{user.id.substring(0, 8)}...</span>
                   </div>
                   <span style={{ textAlign: 'right', color: 'var(--primary)', fontWeight: 800 }}>{renderValue(user)}</span>
                 </div>

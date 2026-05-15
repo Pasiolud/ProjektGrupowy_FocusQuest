@@ -145,12 +145,24 @@ export default function DashboardView({ session }) {
           </div>
         </header>
 
-        {activeTab === 'profile' && <ProfileTab profile={profile} />}
-        {activeTab === 'timer' && <TimerTab session={session} profile={profile} onSessionComplete={fetchProfileFromPython} timerTheme={equippedThemes.timer_color} />}
-        {activeTab === 'inventory' && <InventoryTab session={session} profile={profile} onUpdateProfile={fetchProfileFromPython} />}
-        {activeTab === 'garden' && <GardenTab session={session} profile={profile} onUpdateProfile={fetchProfileFromPython} />}
-        {activeTab === 'shop' && <ShopTab session={session} profile={profile} onUpdateProfile={fetchProfileFromPython} />}
-        {activeTab === 'leaderboard' && <LeaderboardTab session={session} />}
+        <div style={{ display: activeTab === 'profile' ? 'block' : 'none' }}>
+          <ProfileTab profile={profile} />
+        </div>
+        <div style={{ display: activeTab === 'timer' ? 'block' : 'none' }}>
+          <TimerTab session={session} profile={profile} onSessionComplete={fetchProfileFromPython} timerTheme={equippedThemes.timer_color} />
+        </div>
+        <div style={{ display: activeTab === 'inventory' ? 'block' : 'none' }}>
+          <InventoryTab session={session} profile={profile} onUpdateProfile={fetchProfileFromPython} />
+        </div>
+        <div style={{ display: activeTab === 'garden' ? 'block' : 'none' }}>
+          <GardenTab session={session} profile={profile} onUpdateProfile={fetchProfileFromPython} />
+        </div>
+        <div style={{ display: activeTab === 'shop' ? 'block' : 'none' }}>
+          <ShopTab session={session} profile={profile} onUpdateProfile={fetchProfileFromPython} />
+        </div>
+        <div style={{ display: activeTab === 'leaderboard' ? 'block' : 'none' }}>
+          <LeaderboardTab session={session} />
+        </div>
 
         <div style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', height: '20vh', background: 'linear-gradient(to top, rgba(0,0,0,0.1), transparent)', pointerEvents: 'none', zIndex: 0 }}></div>
       </main>
